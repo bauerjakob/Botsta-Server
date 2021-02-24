@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Botsta.DataStorage.Migrations
 {
-    [DbContext(typeof(PsqlContext))]
+    [DbContext(typeof(BotstaDbContext))]
     [Migration("20210220174300_Initial")]
     partial class Initial
     {

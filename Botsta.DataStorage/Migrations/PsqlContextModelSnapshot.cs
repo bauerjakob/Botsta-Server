@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Botsta.DataStorage.Migrations
 {
-    [DbContext(typeof(PsqlContext))]
+    [DbContext(typeof(BotstaDbContext))]
     partial class PsqlContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -14,7 +14,5 @@ namespace Botsta.DataStorage.Models
 
         [Required]
         public string MessageJson { get; set; }
-
-        public string MyProperty { get; set; }
     }
 }
