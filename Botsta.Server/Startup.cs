@@ -100,6 +100,8 @@ namespace Botsta.Server
             services.AddScoped<BotstaMutation>();
             services.AddScoped<ISchema, BotstaSchema>();
 
+            services.AddScoped<ISessionController, SessionController>();
+
             services.AddGraphQL((options, provider) =>
             {
                 options.EnableMetrics = true;

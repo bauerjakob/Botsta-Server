@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
@@ -22,5 +23,7 @@ namespace Botsta.DataStorage.Models
 
         [Required]
         public string PasswordSalt { get; set; }
+
+        public IEnumerable<Chatroom> Chatrooms { get; set; }
     }
 }

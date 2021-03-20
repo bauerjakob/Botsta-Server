@@ -26,14 +26,25 @@ namespace Botsta.DataStorage.Models
             await _dbContext.SaveChangesAsync();
         }
 
-        public IEnumerable<Message> GetMessages()
+        public IEnumerable<Message> GetMessages(string chatroomId)
         {
-            return _dbContext.Messages?.ToList();
+            return _dbContext.Chatrooms?
+                .Single(c => c.ChatroomId.ToString() == chatroomId).Messages;
         }
 
         public User GetUserByUsername(string username)
         {
             return _dbContext.Users?.Single(u => u.Username == username);
+        }
+
+        public User GetUserById(string userId)
+        {
+            return _dbContext.Users?.Single(u => u.UserId.ToString() == userId);
+        }
+
+        public IEnumerable<User> GetAllUsers()
+        {
+            return _dbContext.Users.ToList();
         }
     }
 }

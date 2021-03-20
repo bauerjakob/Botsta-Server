@@ -33,10 +33,10 @@ namespace Botsta.Server.GraphQL
                     ),
                 resolve: async context =>
                 {
-                    var username = context.Arguments.First(a => a.Key == "username");
-                    var password = context.Arguments.First(a => a.Key == "password");
-                    await identityManager.RegisterAsync(username.Value.ToString(), password.Value.ToString());
-                    return "Success";
+                    var username = context.Arguments.First(a => a.Key == "username").Value.ToString();
+                    var password = context.Arguments.First(a => a.Key == "password").Value.ToString();
+                    await identityManager.RegisterAsync(username, password);
+                    return identityManager.Login(username, password);
                 }
             );
         }
