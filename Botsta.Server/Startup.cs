@@ -144,6 +144,7 @@ namespace Botsta.Server
                 app.UseGraphQLPlayground(new GraphQLPlaygroundOptions
                 {
                     EditorTheme = EditorTheme.Dark,
+                    PrettierTabWidth = 4
                 });
             }
 

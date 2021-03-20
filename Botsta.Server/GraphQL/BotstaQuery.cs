@@ -13,11 +13,17 @@ namespace Botsta.Server.GraphQL
     {
         public BotstaQuery(IBotstaDbRepository dbContext)
         {
-            this.AuthorizeWith(PoliciesExtentions.User);
             Field(
                 name: "messages",
                 type: typeof(ListGraphType<MessageType>),
                 resolve: context => dbContext.GetMessages(),
+                description: "Returns a list all messages"
+            ).AuthorizeWith(PoliciesExtentions.User);
+
+            Field(
+                name: "messagess",
+                type: typeof(StringGraphType),
+                resolve: context => "Hello World",
                 description: "Returns a list all messages"
             );
         }
