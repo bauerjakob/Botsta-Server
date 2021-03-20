@@ -5,6 +5,7 @@ namespace Botsta.DataStorage.Models
 {
     public class BotstaDbContext : DbContext
     {
+
         public BotstaDbContext(DbContextOptions<BotstaDbContext> options) : base(options)
         {
         }

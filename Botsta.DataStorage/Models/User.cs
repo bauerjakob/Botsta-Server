@@ -12,9 +12,15 @@ namespace Botsta.DataStorage.Models
         public Guid UserId { get; set; }
 
         [Required]
-        public string UserName { get; set; }
+        public string Username { get; set; }
 
         [Required]
         public DateTimeOffset Registerd { get; set; }
+
+        [Required]
+        public string PasswordHash { get; set; }
+
+        [Required]
+        public string PasswordSalt { get; set; }
     }
 }

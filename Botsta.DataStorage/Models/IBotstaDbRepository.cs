@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Botsta.DataStorage.Models
 {
     public interface IBotstaDbRepository
     {
-        IEnumerable<Message> GetMessages();
+        public IEnumerable<Message> GetMessages();
+
+        public User GetUserByUsername(string username);
+
+        public Task AddUserToDb(User user);
     }
 }

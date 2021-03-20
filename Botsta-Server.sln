@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.808.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Botsta.DataStorage", "Botsta.DataStorage\Botsta.DataStorage.csproj", "{6C1437FC-3BE5-41A8-BC2B-C761060FAFCA}"
 EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "Botsta.Server", "Botsta.Server\Botsta.Server.csproj", "{5A723264-00DC-4292-BF0C-080F38AD7C2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Botsta.Server", "Botsta.Server\Botsta.Server.csproj", "{5A723264-00DC-4292-BF0C-080F38AD7C2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
