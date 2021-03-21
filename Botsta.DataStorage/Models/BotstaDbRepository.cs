@@ -46,5 +46,32 @@ namespace Botsta.DataStorage.Models
         {
             return _dbContext.Users.ToList();
         }
+
+        public Bot GetBotById(string botId)
+        {
+            return _dbContext.Bots.Single(b => b.BotId.ToString() == botId);
+        }
+
+        public async Task AddChatroomToDbAsync(Chatroom chatroom)
+        {
+            if (chatroom is null)
+            {
+                throw new ArgumentNullException(nameof(chatroom));
+            }
+
+            await _dbContext.Chatrooms.AddAsync(chatroom);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task AddMessageToDb(Message message)
+        {
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            await _dbContext.Messages.AddAsync(message);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

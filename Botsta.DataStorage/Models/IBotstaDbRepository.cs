@@ -14,6 +14,12 @@ namespace Botsta.DataStorage.Models
 
         public User GetUserById(string userId);
 
+        public Bot GetBotById(string botId);
+
         public Task AddUserToDb(User user);
+
+        public Task AddChatroomToDbAsync(Chatroom chatroom);
+
+        public Task AddMessageToDb(Message message);
     }
 }

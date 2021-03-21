@@ -25,5 +25,7 @@ namespace Botsta.DataStorage.Models
         public string PasswordSalt { get; set; }
 
         public IEnumerable<Chatroom> Chatrooms { get; set; }
+
+        public IEnumerable<Bot> Bots { get; set; }
     }
 }
