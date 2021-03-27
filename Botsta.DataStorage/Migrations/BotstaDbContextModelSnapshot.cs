@@ -16,14 +16,22 @@ namespace Botsta.DataStorage.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.3")
+                .HasAnnotation("ProductVersion", "5.0.4")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Botsta.DataStorage.Models.Bot", b =>
                 {
-                    b.Property<Guid>("BotId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ApiKeyHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ApiKeySalt")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("BotName")
                         .IsRequired()
@@ -32,17 +40,16 @@ namespace Botsta.DataStorage.Migrations
                     b.Property<Guid?>("ChatroomId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("HashedApiKey")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Registerd")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("WebhookUrl")
                         .HasColumnType("text");
 
-                    b.HasKey("BotId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ChatroomId");
 
@@ -53,42 +60,43 @@ namespace Botsta.DataStorage.Migrations
 
             modelBuilder.Entity("Botsta.DataStorage.Models.Chatroom", b =>
                 {
-                    b.Property<Guid>("ChatroomId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.HasKey("ChatroomId");
+                    b.HasKey("Id");
 
                     b.ToTable("Chatroom");
                 });
 
             modelBuilder.Entity("Botsta.DataStorage.Models.Message", b =>
                 {
-                    b.Property<Guid>("MessageId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ChatroomId")
+                    b.Property<Guid>("ChatroomId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("MessageJson")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("MessageId");
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("ChatroomId");
+                    b.Property<int>("SenderType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Message");
                 });
 
             modelBuilder.Entity("Botsta.DataStorage.Models.User", b =>
                 {
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("ChatroomId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("PasswordHash")
@@ -106,11 +114,39 @@ namespace Botsta.DataStorage.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("UserId");
-
-                    b.HasIndex("ChatroomId");
+                    b.HasKey("Id");
 
                     b.ToTable("User");
+                });
+
+            modelBuilder.Entity("ChatroomMessage", b =>
+                {
+                    b.Property<Guid>("ChatroomsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessagesId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ChatroomsId", "MessagesId");
+
+                    b.HasIndex("MessagesId");
+
+                    b.ToTable("ChatroomMessage");
+                });
+
+            modelBuilder.Entity("ChatroomUser", b =>
+                {
+                    b.Property<Guid>("ChatroomsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsersId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ChatroomsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("ChatroomUser");
                 });
 
             modelBuilder.Entity("Botsta.DataStorage.Models.Bot", b =>
@@ -120,7 +156,7 @@ namespace Botsta.DataStorage.Migrations
                         .HasForeignKey("ChatroomId");
 
                     b.HasOne("Botsta.DataStorage.Models.User", "Owner")
-                        .WithMany()
+                        .WithMany("Bots")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -128,27 +164,44 @@ namespace Botsta.DataStorage.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("Botsta.DataStorage.Models.Message", b =>
+            modelBuilder.Entity("ChatroomMessage", b =>
                 {
                     b.HasOne("Botsta.DataStorage.Models.Chatroom", null)
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatroomId");
+                        .WithMany()
+                        .HasForeignKey("ChatroomsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Botsta.DataStorage.Models.Message", null)
+                        .WithMany()
+                        .HasForeignKey("MessagesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("Botsta.DataStorage.Models.User", b =>
+            modelBuilder.Entity("ChatroomUser", b =>
                 {
                     b.HasOne("Botsta.DataStorage.Models.Chatroom", null)
-                        .WithMany("Users")
-                        .HasForeignKey("ChatroomId");
+                        .WithMany()
+                        .HasForeignKey("ChatroomsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Botsta.DataStorage.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Botsta.DataStorage.Models.Chatroom", b =>
                 {
                     b.Navigation("Bots");
+                });
 
-                    b.Navigation("Messages");
-
-                    b.Navigation("Users");
+            modelBuilder.Entity("Botsta.DataStorage.Models.User", b =>
+                {
+                    b.Navigation("Bots");
                 });
 #pragma warning restore 612, 618
         }

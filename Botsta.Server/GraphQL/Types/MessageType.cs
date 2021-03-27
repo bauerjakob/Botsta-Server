@@ -8,7 +8,7 @@ namespace Botsta.Server.GraphQL.Types
     {
         public MessageType()
         {
-            Field(x => x.MessageId);
+            Field(x => x.Id);
             Field(x => x.MessageJson);
         }
     }

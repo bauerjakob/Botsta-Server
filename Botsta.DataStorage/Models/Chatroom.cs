@@ -9,7 +9,7 @@ namespace Botsta.DataStorage.Models
     public class Chatroom
     {
         [Key]
-        public Guid ChatroomId { get; set; }
+        public Guid Id { get; set; }
 
         public IEnumerable<User> Users { get; set; }
 

@@ -10,11 +10,14 @@ using Botsta.Server.Extentions;
 using Botsta.Server.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System.Linq;
 
 namespace Botsta.Server.Middelware
 {
     public class IdentityService : IIdentityService
     {
+        private static Random _random = new Random();
+
         private readonly ILogger<IdentityService> _logger;
         private readonly AppConfig _appConfig;
         private readonly IBotstaDbRepository _dbContext;
@@ -31,13 +34,13 @@ namespace Botsta.Server.Middelware
             _dbContext = dbContext;
         }
 
-        public async Task<User> RegisterAsync(string username, string password)
+        public async Task<User> RegisterUserAsync(string username, string password)
         {
             (var hash, var salt) = HashPassword(password);
 
             var user = new User
             {
-                UserId = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 Username = username,
                 Registerd = DateTimeOffset.Now,
                 PasswordHash = hash,
@@ -49,28 +52,70 @@ namespace Botsta.Server.Middelware
             return user;
         }
 
-        public string Login(string username, string password)
+        public async Task<(string apiKey, Bot bot)> RegisterBotAsync(string botName, User owner, string webhookUrl = null)
         {
-            User user = _dbContext.GetUserByUsername(username);
+            var apiKey = GenerateApiKey();
+
+            (var hash, var salt) = HashPassword(apiKey);
+
+            var bot = new Bot
+            {
+                Id = Guid.NewGuid(),
+                BotName = botName,
+                Registerd = DateTimeOffset.Now,
+                ApiKeyHash = hash,
+                ApiKeySalt = salt,
+                WebhookUrl = webhookUrl,
+                Owner = owner
+            };
+
+            await _dbContext.AddBotToDbAsync(bot);
+
+            return (apiKey, bot);
+        }
+
+        private string GenerateApiKey()
+        {
+            int length = _random.Next(31, 37);
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.,:+#*'?=)(/&%$§}[]}!´`@<>";
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[_random.Next(s.Length)]).ToArray());
+        }
+
+        public string LoginUser(string username, string password)
+        {
+            var user = _dbContext.GetUserByUsername(username);
 
             if (user != null
-                && username == user.Username
                 && VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
             {
-                return GenerateJwtToken(user);
+                return GenerateJwtToken(user.Id.ToString(), PoliciesExtentions.User);
             }
 
             return null;
         }
 
-        string GenerateJwtToken(User user)
+        public string LoginBot(string botName, string apiKey)
+        {
+            var bot = _dbContext.GetBotByName(botName);
+
+            if (bot != null
+                && VerifyPassword(apiKey, bot.ApiKeyHash, bot.ApiKeySalt))
+            {
+                return GenerateJwtToken(bot.Id.ToString(), PoliciesExtentions.Bot);
+            }
+
+            return null;
+        }
+
+        string GenerateJwtToken(string subject, string role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appConfig.JwtSecret));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-                new Claim("role", PoliciesExtentions.User),
+                new Claim(JwtRegisteredClaimNames.Sub, subject),
+                new Claim("role", role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 

@@ -42,7 +42,7 @@ namespace Botsta.Server.GraphQL
                 resolve: c =>
                 {
                     var user = session.GetUser();
-                    return user.Chatrooms.Select(u => u.ChatroomId.ToString());
+                    return user.Chatrooms.Select(u => u.Id.ToString());
                 });
 
         }

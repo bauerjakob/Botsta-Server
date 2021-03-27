@@ -40,7 +40,7 @@ namespace Botsta.Server.Controllers
 
             try
             {
-                await _identityService.RegisterAsync(username, password);
+                await _identityService.RegisterUserAsync(username, password);
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace Botsta.Server.Controllers
             var credentials = Encoding.UTF8.GetString(Convert.FromBase64String(key)).Split(':');
             var username = credentials[0];
             var password = credentials[1];
-            var token = _identityService.Login(username, password);
+            var token = _identityService.LoginUser(username, password);
 
             return Ok(new { token });
         }

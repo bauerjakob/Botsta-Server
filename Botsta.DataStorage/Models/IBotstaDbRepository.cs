@@ -21,5 +21,9 @@ namespace Botsta.DataStorage.Models
         public Task AddChatroomToDbAsync(Chatroom chatroom);
 
         public Task AddMessageToDb(Message message);
+
+        public Bot GetBotByName(string botName);
+
+        public Task AddBotToDbAsync(Bot bot);
     }
 }

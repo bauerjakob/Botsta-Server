@@ -10,7 +10,7 @@ namespace Botsta.DataStorage.Models
     public class User
     {
         [Key]
-        public Guid UserId { get; set; }
+        public Guid Id { get; set; }
 
         [Required]
         public string Username { get; set; }

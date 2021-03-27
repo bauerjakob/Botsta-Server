@@ -29,7 +29,7 @@ namespace Botsta.DataStorage.Models
         public IEnumerable<Message> GetMessages(string chatroomId)
         {
             return _dbContext.Chatrooms?
-                .Single(c => c.ChatroomId.ToString() == chatroomId).Messages;
+                .Single(c => c.Id.ToString() == chatroomId).Messages;
         }
 
         public User GetUserByUsername(string username)
@@ -39,7 +39,7 @@ namespace Botsta.DataStorage.Models
 
         public User GetUserById(string userId)
         {
-            return _dbContext.Users?.Single(u => u.UserId.ToString() == userId);
+            return _dbContext.Users?.Single(u => u.Id.ToString() == userId);
         }
 
         public IEnumerable<User> GetAllUsers()
@@ -49,7 +49,7 @@ namespace Botsta.DataStorage.Models
 
         public Bot GetBotById(string botId)
         {
-            return _dbContext.Bots.Single(b => b.BotId.ToString() == botId);
+            return _dbContext.Bots.Single(b => b.Id.ToString() == botId);
         }
 
         public async Task AddChatroomToDbAsync(Chatroom chatroom)
@@ -71,6 +71,22 @@ namespace Botsta.DataStorage.Models
             }
 
             await _dbContext.Messages.AddAsync(message);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public Bot GetBotByName(string botName)
+        {
+            return _dbContext.Bots.Single(b => b.BotName == botName);
+        }
+
+        public async Task AddBotToDbAsync(Bot bot)
+        {
+            if (bot is null)
+            {
+                throw new ArgumentNullException(nameof(bot));
+            }
+
+            await _dbContext.Bots.AddAsync(bot);
             await _dbContext.SaveChangesAsync();
         }
     }

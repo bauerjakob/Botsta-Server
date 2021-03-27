@@ -9,6 +9,7 @@ namespace Botsta.Server.Extentions
     public static class PoliciesExtentions
     {
         public const string User = "User";
+        public const string Bot = "Bot";
 
 
         public static AuthorizationPolicy UserPolicy(this AuthorizationPolicyBuilder builder)
@@ -16,6 +17,14 @@ namespace Botsta.Server.Extentions
             return builder
                 .RequireAuthenticatedUser()
                 .RequireRole(User)
+                .Build();
+        }
+
+        public static AuthorizationPolicy BotPolicy(this AuthorizationPolicyBuilder builder)
+        {
+            return builder
+                .RequireAuthenticatedUser()
+                .RequireRole(Bot)
                 .Build();
         }
     }

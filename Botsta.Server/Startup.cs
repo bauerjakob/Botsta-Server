@@ -111,6 +111,7 @@ namespace Botsta.Server
             .AddGraphQLAuthorization(options =>
                 {
                     options.AddPolicy(PoliciesExtentions.User, p => p.UserPolicy());
+                    options.AddPolicy(PoliciesExtentions.Bot, p => p.BotPolicy());
                 }
             )
            .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)

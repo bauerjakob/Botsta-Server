@@ -6,7 +6,9 @@ namespace Botsta.Server.Middelware
 {
     public interface IIdentityService
     {
-        public Task<User> RegisterAsync(string username, string password);
-        public string Login(string username, string password);
+        public Task<User> RegisterUserAsync(string username, string password);
+        public Task<(string apiKey, Bot bot)> RegisterBotAsync(string botName, User owner, string webhookUrl = null);
+        public string LoginUser(string username, string password);
+        public string LoginBot(string botName, string apiKey);
     }
 }

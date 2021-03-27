@@ -5,6 +5,7 @@ using Botsta.DataStorage.Models;
 using Botsta.Server.Extentions;
 using Botsta.Server.GraphQL.Types;
 using Botsta.Server.Middelware;
+using GraphQL;
 using GraphQL.Authorization;
 using GraphQL.Types;
 
@@ -12,7 +13,7 @@ namespace Botsta.Server.GraphQL
 {
     public class BotstaMutation : ObjectGraphType
     {
-        public BotstaMutation(IBotstaDbRepository dbContext, IIdentityService identityManager)
+        public BotstaMutation(IBotstaDbRepository dbContext, IIdentityService identityManager, ISessionController session)
         {
             Field<StringGraphType>("login",
                 arguments: new QueryArguments(
@@ -21,12 +22,10 @@ namespace Botsta.Server.GraphQL
                     ),
                 resolve: context =>
                 {
-                    var username = context.Arguments.First(a => a.Key == "username");
-                    var password = context.Arguments.First(a => a.Key == "password");
+                    var username = context.GetArgument<string>("username");
+                    var password = context.GetArgument<string>("password");
 
-                    var token = identityManager.Login(username.Value.ToString(), password.Value.ToString());
-
-                    return token;
+                    return identityManager.LoginUser(username, password);
                 }
             );
 
@@ -37,12 +36,40 @@ namespace Botsta.Server.GraphQL
                     ),
                 resolve: async context =>
                 {
-                    var username = context.Arguments.First(a => a.Key == "username").Value.ToString();
-                    var password = context.Arguments.First(a => a.Key == "password").Value.ToString();
-                    await identityManager.RegisterAsync(username, password);
-                    return identityManager.Login(username, password);
+                    var username = context.GetArgument<string>("username");
+                    var password = context.GetArgument<string>("password");
+
+                    await identityManager.RegisterUserAsync(username, password);
+                    return identityManager.LoginUser(username, password);
                 }
             );
+
+            Field<StringGraphType>("loginBot",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "botName" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "apiKey" }
+                    ),
+                resolve: context =>
+                {
+                    var botName = context.GetArgument<string>("botName");
+                    var apiKey = context.GetArgument<string>("apiKey");
+                    return identityManager.LoginBot(botName, apiKey);
+                }
+            );
+
+            FieldAsync<StringGraphType>("registerBot",
+               description: "Register new bot",
+               arguments: new QueryArguments(
+                   new QueryArgument<StringGraphType> { Name = "botName" }
+                   ),
+               resolve: async context => {
+                   var botName = context.GetArgument<string>("botName");
+                   var user = session.GetUser();
+                   var (apiKey, bot) = await identityManager.RegisterBotAsync(botName, user);
+
+                   return apiKey;
+               }
+               ).AuthorizeWith(PoliciesExtentions.User);
 
             FieldAsync<ChatroomType>("newChatroom",
                 arguments: new QueryArguments(
@@ -52,17 +79,15 @@ namespace Botsta.Server.GraphQL
                 description: "Create a new chatroom",
                 resolve: async context =>
                 {
-                    var userIds = context.Arguments
-                        .First(a => a.Key == "userIds").Value as List<string>;
+                    var userIds = context.GetArgument<string[]>("userIds");
 
-                    var botIds = context.Arguments
-                        .First(a => a.Key == "botIds").Value as List<string>;
+                    var botIds = context.GetArgument<string[]>("botIds");
 
                     var users = userIds.Select(u => dbContext.GetUserById(u));
                     var bots = botIds.Select(u => dbContext.GetBotById(u));
 
                     var chatroom = new Chatroom {
-                        ChatroomId = Guid.NewGuid(),
+                        Id = Guid.NewGuid(),
                         Users = users,
                         Bots = bots
                     };
@@ -73,6 +98,7 @@ namespace Botsta.Server.GraphQL
                 }
             ).AuthorizeWith(PoliciesExtentions.User);
 
+
             FieldAsync<MessageType>("newMessage",
                 description: "Post message to chatroom",
                 arguments: new QueryArguments(
@@ -81,12 +107,12 @@ namespace Botsta.Server.GraphQL
                 ),
                 resolve: async context =>
                 {
-                    var chatroomId = context.Arguments.Single(a => a.Key == "chatroomId").Value.ToString();
-                    var messageJson = context.Arguments.Single(a => a.Key == "message").Value.ToString();
+                    var chatroomId = context.GetArgument<string>("chatroomId");
+                    var messageJson = context.GetArgument<string>("message");
 
                     var newMessage = new Message
                     {
-                        MessageId = Guid.NewGuid(),
+                        Id = Guid.NewGuid(),
                         MessageJson = messageJson,
                         ChatroomId = Guid.Parse(chatroomId)
                     };

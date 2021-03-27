@@ -9,9 +9,9 @@ namespace Botsta.Server.GraphQL.Types
     {
         public ChatroomType()
         {
-            Field(c => c.ChatroomId);
-            Field(c => c.Users);
-            Field(c => c.Messages);
+            Field(c => c.Id);
+            //Field(c => c.Users);
+            //Field(c => c.Messages);
         }
     }
 }

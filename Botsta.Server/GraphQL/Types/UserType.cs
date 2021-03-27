@@ -8,7 +8,7 @@ namespace Botsta.Server.GraphQL.Types
     {
         public UserType()
         {
-            Field("userId", u => u.UserId.ToString());
+            Field("userId", u => u.Id.ToString());
             Field(u => u.Username);
         }
     }
