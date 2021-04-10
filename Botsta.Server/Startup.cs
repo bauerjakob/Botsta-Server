@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Botsta.DataStorage.Models;
+using Botsta.DataStorage.Entities;
 using Botsta.Server.Configuration;
 using GraphQL.Types;
 using GraphQL.Server;
@@ -25,6 +25,12 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Botsta.Server.Extentions;
 using Botsta.Server.Middelware;
+using Botsta.Server.Services;
+using Microsoft.Extensions.Primitives;
+using System.IO;
+using GraphQL.Server.Transports.AspNetCore.NewtonsoftJson;
+using System.Runtime.Serialization.Formatters.Binary;
+using Botsta.DataStorage;
 
 namespace Botsta.Server
 {
@@ -43,6 +49,26 @@ namespace Botsta.Server
 
         public AppConfig AppConfig { get; set; }
 
+        public TokenValidationParameters TokenValidationParameters
+        {
+            get
+            {
+                var serverSecret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppConfig.JwtSecret));
+                return new TokenValidationParameters
+                {
+                    IssuerSigningKey = serverSecret,
+                    ValidIssuer = AppConfig.JwtIssuer,
+                    ValidAudience = AppConfig.JwtAudience,
+                    ValidateLifetime = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            }
+        }
+
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -54,8 +80,9 @@ namespace Botsta.Server
 
             services.AddScoped<IBotstaDbRepository, BotstaDbRepository>();
 
+            services.AddSingleton(TokenValidationParameters);
             services.AddSingleton(AppConfig);
-            services.AddTransient<IIdentityService, IdentityService>();
+            services.AddScoped<IIdentityService, IdentityService>();
 
             ConfigureGraphQL(services);
 
@@ -63,17 +90,7 @@ namespace Botsta.Server
                 .AddJwtBearer(options => {
                     options.SaveToken = true;
                     options.RequireHttpsMetadata = false;
-                    var serverSecret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppConfig.JwtSecret));
-                    options.TokenValidationParameters = new TokenValidationParameters {
-                        IssuerSigningKey = serverSecret,
-                        ValidIssuer = AppConfig.JwtIssuer,
-                        ValidAudience = AppConfig.JwtAudience,
-                        ValidateLifetime = true,
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
-                        ClockSkew = TimeSpan.Zero
-                    };
+                    options.TokenValidationParameters = TokenValidationParameters;
                 });
 
             services.AddSwaggerGen(options =>
@@ -98,15 +115,17 @@ namespace Botsta.Server
         {
             services.AddScoped<BotstaQuery>();
             services.AddScoped<BotstaMutation>();
+            services.AddScoped<BotstaSubscription>();
             services.AddScoped<ISchema, BotstaSchema>();
 
             services.AddScoped<ISessionController, SessionController>();
+            services.AddSingleton<IChatNotifier, ChatNotifier>();
 
             services.AddGraphQL((options, provider) =>
             {
                 options.EnableMetrics = true;
                 var logger = provider.GetRequiredService<ILogger<Startup>>();
-                options.UnhandledExceptionDelegate = ctx => logger.LogError("{Error} occurred", ctx.OriginalException.Message);
+                options.UnhandledExceptionDelegate = ctx => logger.LogError(ctx.OriginalException, string.Empty);
             })
             .AddGraphQLAuthorization(options =>
                 {
@@ -115,23 +134,12 @@ namespace Botsta.Server
                 }
             )
            .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)
-           .AddGraphTypes(typeof(BotstaSchema))
-           .AddNewtonsoftJson();
+           .AddNewtonsoftJson()
+           .AddWebSockets()
+           .AddDataLoader()
+           .AddGraphTypes(typeof(BotstaSchema));
 
-            //services.AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>()
-            //    .AddTransient<IValidationRule, AuthorizationValidationRule>()
-            //    //.AddTransient<AuthorizationSettings>()
-            //    //.AddAuthorization(config =>
-            //    //{
-            //    //    config.AddPolicy(Policies.User, p => Policies.UserPolicy(p));
-            //    //});
-            //    .AddTransient(s =>
-            //    {
-            //        var authSettings = new AuthorizationSettings();
-            //        authSettings.AddPolicy(Policies.User, p => p.RequireClaim("role", "User"));
-            //        return authSettings;
-            //    });
-
+            
 
             services.Configure<KestrelServerOptions>(options => options.AllowSynchronousIO = true);
             services.Configure<IISServerOptions>(options => options.AllowSynchronousIO = true);
@@ -163,8 +171,9 @@ namespace Botsta.Server
                 endpoints.MapControllers();
             });
 
+            app.UseWebSockets();
+            app.UseGraphQLWebSockets<ISchema>();
             app.UseGraphQL<ISchema>();
-                
 
             app.UseSwagger();
 

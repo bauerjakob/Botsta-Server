@@ -1,7 +1,8 @@
 ﻿using System;
+using Botsta.DataStorage.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Botsta.DataStorage.Models
+namespace Botsta.DataStorage
 {
     public class BotstaDbContext : DbContext
     {

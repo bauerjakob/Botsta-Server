@@ -10,6 +10,7 @@ namespace Botsta.Server.GraphQL
         {
             Query = provider.GetRequiredService<BotstaQuery>();
             Mutation = provider.GetRequiredService<BotstaMutation>();
+            Subscription = provider.GetRequiredService<BotstaSubscription>();
         }
     }
 }

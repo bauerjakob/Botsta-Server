@@ -1,5 +1,5 @@
 ﻿using System;
-using Botsta.DataStorage.Models;
+using Botsta.DataStorage.Entities;
 using GraphQL.Types;
 
 namespace Botsta.Server.GraphQL.Types

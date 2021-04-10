@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Botsta.DataStorage.Models;
+using Botsta.DataStorage;
+using Botsta.DataStorage.Entities;
 using Botsta.Server.Extentions;
 using Botsta.Server.GraphQL.Types;
 using Botsta.Server.Middelware;
+using Botsta.Server.Services;
 using GraphQL;
 using GraphQL.Authorization;
 using GraphQL.Types;
@@ -13,7 +15,7 @@ namespace Botsta.Server.GraphQL
 {
     public class BotstaMutation : ObjectGraphType
     {
-        public BotstaMutation(IBotstaDbRepository dbContext, IIdentityService identityManager, ISessionController session)
+        public BotstaMutation(IBotstaDbRepository dbContext, IIdentityService identityManager, ISessionController session, IChatNotifier notifier)
         {
             Field<StringGraphType>("login",
                 arguments: new QueryArguments(
@@ -79,7 +81,12 @@ namespace Botsta.Server.GraphQL
                 description: "Create a new chatroom",
                 resolve: async context =>
                 {
-                    var userIds = context.GetArgument<string[]>("userIds");
+                    var currentUser = session.GetUser();
+
+                    var userIds = context.GetArgument<string[]>("userIds")?
+                    .ToList().ToHashSet();
+
+                    userIds.Add(currentUser.Id.ToString()) ;
 
                     var botIds = context.GetArgument<string[]>("botIds");
 
@@ -88,8 +95,8 @@ namespace Botsta.Server.GraphQL
 
                     var chatroom = new Chatroom {
                         Id = Guid.NewGuid(),
-                        Users = users,
-                        Bots = bots
+                        Users = users.ToList(),
+                        Bots = bots.ToList()
                     };
 
                     await dbContext.AddChatroomToDbAsync(chatroom);
@@ -99,7 +106,7 @@ namespace Botsta.Server.GraphQL
             ).AuthorizeWith(PoliciesExtentions.User);
 
 
-            FieldAsync<MessageType>("newMessage",
+            FieldAsync<MessageType>("postMessage",
                 description: "Post message to chatroom",
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType> { Name = "chatroomId" },
@@ -110,14 +117,20 @@ namespace Botsta.Server.GraphQL
                     var chatroomId = context.GetArgument<string>("chatroomId");
                     var messageJson = context.GetArgument<string>("message");
 
+                    var user = session.GetUser();
+
                     var newMessage = new Message
                     {
                         Id = Guid.NewGuid(),
                         MessageJson = messageJson,
-                        ChatroomId = Guid.Parse(chatroomId)
+                        ChatroomId = Guid.Parse(chatroomId),
+                        SenderId = user.Id,
+                        SenderType = SenderType.User
                     };
 
                     await dbContext.AddMessageToDb(newMessage);
+
+                    notifier.NotifyChat(newMessage);
 
                     return newMessage;
                 }

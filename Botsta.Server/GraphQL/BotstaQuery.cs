@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Botsta.DataStorage.Models;
+using Botsta.DataStorage;
+using Botsta.DataStorage.Entities;
 using Botsta.Server.Configuration;
 using Botsta.Server.Extentions;
 using Botsta.Server.GraphQL.Types;
@@ -27,7 +28,7 @@ namespace Botsta.Server.GraphQL
 
             Field<UserType>(
                 "whoami",
-                description: "Returns informations to the current user.",
+                description: "Returns informations about the current user.",
                 resolve: c => session.GetUser());
 
             Field<ListGraphType<UserType>>(

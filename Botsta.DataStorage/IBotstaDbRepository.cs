@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Botsta.DataStorage.Entities;
 
-namespace Botsta.DataStorage.Models
+namespace Botsta.DataStorage
 {
     public interface IBotstaDbRepository
     {

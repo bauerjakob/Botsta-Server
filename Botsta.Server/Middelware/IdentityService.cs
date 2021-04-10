@@ -5,12 +5,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Botsta.DataStorage.Models;
+using Botsta.DataStorage.Entities;
 using Botsta.Server.Extentions;
 using Botsta.Server.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
+using System.Security.Principal;
+using Botsta.DataStorage;
 
 namespace Botsta.Server.Middelware
 {
@@ -21,17 +23,19 @@ namespace Botsta.Server.Middelware
         private readonly ILogger<IdentityService> _logger;
         private readonly AppConfig _appConfig;
         private readonly IBotstaDbRepository _dbContext;
+        private readonly TokenValidationParameters _tokenValidationParameters;
 
 
         private const int TOKEN_ITERATIONS = 10000;
         private static readonly TimeSpan TOKEN_LIFETIME = TimeSpan.FromMinutes(30);
 
 
-        public IdentityService(ILogger<IdentityService> logger, AppConfig appConfig, IBotstaDbRepository dbContext)
+        public IdentityService(ILogger<IdentityService> logger, AppConfig appConfig, IBotstaDbRepository dbContext, TokenValidationParameters tokenValidationParameters)
         {
             _logger = logger;
             _appConfig = appConfig;
             _dbContext = dbContext;
+            _tokenValidationParameters = tokenValidationParameters;
         }
 
         public async Task<User> RegisterUserAsync(string username, string password)
@@ -130,6 +134,15 @@ namespace Botsta.Server.Middelware
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public ClaimsPrincipal ValidateToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            SecurityToken validatedToken;
+            var principal = tokenHandler.ValidateToken(token, _tokenValidationParameters, out validatedToken);
+            return principal;
+        }
+
         private static bool VerifyPassword(string enteredPassword, string storedHash, string storedSalt)
         {
             if (string.IsNullOrEmpty(enteredPassword))
@@ -149,7 +162,6 @@ namespace Botsta.Server.Middelware
             var rfc2898DeriveBytes = new Rfc2898DeriveBytes(enteredPassword, saltBytes, TOKEN_ITERATIONS);
             return Convert.ToBase64String(rfc2898DeriveBytes.GetBytes(256)) == storedHash;
         }
-
 
         private static byte[] GenerateSalt()
         {

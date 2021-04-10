@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Botsta.Server.Configuration;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using Botsta.DataStorage.Models;
+using Botsta.DataStorage.Entities;
 using System.Security.Cryptography;
 using Botsta.Server.Middelware;
 using Microsoft.AspNetCore.Authorization;

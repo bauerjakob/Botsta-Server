@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Botsta.DataStorage.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace Botsta.DataStorage.Models
+namespace Botsta.DataStorage
 {
     public class BotstaDbRepository : IBotstaDbRepository
     {
@@ -34,12 +36,18 @@ namespace Botsta.DataStorage.Models
 
         public User GetUserByUsername(string username)
         {
-            return _dbContext.Users?.Single(u => u.Username == username);
+            return _dbContext.Users?
+                .Include(u => u.Chatrooms)
+                .Include(u => u.Bots)
+                .Single(u => u.Username == username);
         }
 
         public User GetUserById(string userId)
         {
-            return _dbContext.Users?.Single(u => u.Id.ToString() == userId);
+            return _dbContext.Users?
+                .Include(u => u.Chatrooms)
+                .Include(u => u.Bots)
+                .Single(u => u.Id.ToString() == userId);
         }
 
         public IEnumerable<User> GetAllUsers()
