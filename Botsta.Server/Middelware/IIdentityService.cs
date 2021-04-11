@@ -10,8 +10,7 @@ namespace Botsta.Server.Middelware
     {
         public Task<User> RegisterUserAsync(string username, string password);
         public Task<(string apiKey, Bot bot)> RegisterBotAsync(string botName, User owner, string webhookUrl = null);
-        public string LoginUser(string username, string password);
-        public string LoginBot(string botName, string apiKey);
+        public Task<string> LoginAsync(string name, string secret);
         public ClaimsPrincipal ValidateToken(string token);
     }
 }

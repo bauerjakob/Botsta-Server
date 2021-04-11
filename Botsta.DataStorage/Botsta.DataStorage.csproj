@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Folder Include="Entities\" />
-    <Folder Include="Migrations\" />
     <Folder Include="Mappings\" />
   </ItemGroup>
   <ItemGroup>

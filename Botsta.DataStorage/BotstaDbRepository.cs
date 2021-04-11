@@ -16,6 +16,20 @@ namespace Botsta.DataStorage
             _dbContext = dbContext;
         }
 
+        public async Task<ChatPracticant> GetChatPracticantAsync(string name)
+        {
+            return await _dbContext
+                .ChatPracticants
+                .SingleAsync(p => p.Name == name);
+        }
+
+        public IEnumerable<ChatPracticant> GetChatPracticants(IEnumerable<Guid> ids)
+        {
+            return _dbContext.ChatPracticants.Where(
+                    c => ids.Contains(c.Id)
+                );
+        }
+
         public async Task AddUserToDb(User user)
         {
             if (user is null)
@@ -28,6 +42,32 @@ namespace Botsta.DataStorage
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task<User> AddUserToDbAsync(string username, string passwordHash, string passwordSalt)
+        {
+            var userId = Guid.NewGuid();
+            var practicant = new ChatPracticant
+            {
+                Id = userId,
+                Name = username,
+                SecretHash = passwordHash,
+                SecretSalt = passwordSalt,
+                Registerd = DateTimeOffset.UtcNow,
+                Type = PracticantType.User
+            };
+
+            var user = new User
+            {
+                Id = userId
+            };
+
+            await _dbContext.ChatPracticants.AddAsync(practicant);
+            await _dbContext.Users.AddAsync(user);
+
+            await _dbContext.SaveChangesAsync();
+
+            return user;
+        }
+
         public IEnumerable<Message> GetMessages(string chatroomId)
         {
             return _dbContext.Chatrooms?
@@ -37,27 +77,37 @@ namespace Botsta.DataStorage
         public User GetUserByUsername(string username)
         {
             return _dbContext.Users?
-                .Include(u => u.Chatrooms)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(u => u.Chatrooms)
                 .Include(u => u.Bots)
-                .Single(u => u.Username == username);
+                .Single(u => u.ChatPracticant.Name == username);
         }
 
         public User GetUserById(string userId)
         {
             return _dbContext.Users?
-                .Include(u => u.Chatrooms)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(u => u.Chatrooms)
                 .Include(u => u.Bots)
                 .Single(u => u.Id.ToString() == userId);
         }
 
         public IEnumerable<User> GetAllUsers()
         {
-            return _dbContext.Users.ToList();
+            return _dbContext.Users
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(u => u.Chatrooms)
+                .Include(u => u.Bots)
+                .ToList();
         }
 
         public Bot GetBotById(string botId)
         {
-            return _dbContext.Bots.Single(b => b.Id.ToString() == botId);
+            return _dbContext.Bots
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(u => u.Chatrooms)
+                .Include(u => u.Owner)
+                .Single(b => b.Id.ToString() == botId);
         }
 
         public async Task AddChatroomToDbAsync(Chatroom chatroom)
@@ -84,18 +134,37 @@ namespace Botsta.DataStorage
 
         public Bot GetBotByName(string botName)
         {
-            return _dbContext.Bots.Single(b => b.BotName == botName);
+            return _dbContext.Bots
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(u => u.Chatrooms)
+                .Include(u => u.Owner)
+                .Single(b => b.ChatPracticant.Name == botName);
         }
 
-        public async Task AddBotToDbAsync(Bot bot)
+        public async Task<Bot> AddBotToDbAsync(User owner, string botName, string apiKeyHash, string apiKeySalt)
         {
-            if (bot is null)
+            var botId = Guid.NewGuid();
+            var practicant = new ChatPracticant
             {
-                throw new ArgumentNullException(nameof(bot));
-            }
+                Id = botId,
+                Name = botName,
+                SecretHash = apiKeyHash,
+                SecretSalt = apiKeySalt,
+                Registerd = DateTimeOffset.UtcNow,
+                Type = PracticantType.Bot
+            };
 
+            var bot = new Bot()
+            {
+                Id = botId,
+                Owner = owner
+            };
+
+            await _dbContext.ChatPracticants.AddAsync(practicant);
             await _dbContext.Bots.AddAsync(bot);
             await _dbContext.SaveChangesAsync();
+
+            return bot;
         }
     }
 }

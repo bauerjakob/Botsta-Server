@@ -9,7 +9,7 @@ namespace Botsta.Server.GraphQL.Types
         public MessageType()
         {
             Field(x => x.Id);
-            Field(x => x.MessageJson);
+            Field("message", x => x.Msg);
         }
     }
 }

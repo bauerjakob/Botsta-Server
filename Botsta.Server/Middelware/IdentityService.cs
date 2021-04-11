@@ -42,16 +42,7 @@ namespace Botsta.Server.Middelware
         {
             (var hash, var salt) = HashPassword(password);
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Username = username,
-                Registerd = DateTimeOffset.Now,
-                PasswordHash = hash,
-                PasswordSalt = salt
-            };
-
-            await _dbContext.AddUserToDb(user);
+            var user = await _dbContext.AddUserToDbAsync(username, hash, salt);
 
             return user;
         }
@@ -62,18 +53,7 @@ namespace Botsta.Server.Middelware
 
             (var hash, var salt) = HashPassword(apiKey);
 
-            var bot = new Bot
-            {
-                Id = Guid.NewGuid(),
-                BotName = botName,
-                Registerd = DateTimeOffset.Now,
-                ApiKeyHash = hash,
-                ApiKeySalt = salt,
-                WebhookUrl = webhookUrl,
-                Owner = owner
-            };
-
-            await _dbContext.AddBotToDbAsync(bot);
+            var bot = await _dbContext.AddBotToDbAsync(owner, botName, hash, salt);
 
             return (apiKey, bot);
         }
@@ -86,27 +66,18 @@ namespace Botsta.Server.Middelware
               .Select(s => s[_random.Next(s.Length)]).ToArray());
         }
 
-        public string LoginUser(string username, string password)
+        public async Task<string> LoginAsync(string name, string secret)
         {
-            var user = _dbContext.GetUserByUsername(username);
+            var practicant = await _dbContext.GetChatPracticantAsync(name);
 
-            if (user != null
-                && VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
+            if (practicant != null
+                && VerifyPassword(secret, practicant.SecretHash, practicant.SecretSalt))
             {
-                return GenerateJwtToken(user.Id.ToString(), PoliciesExtentions.User);
-            }
-
-            return null;
-        }
-
-        public string LoginBot(string botName, string apiKey)
-        {
-            var bot = _dbContext.GetBotByName(botName);
-
-            if (bot != null
-                && VerifyPassword(apiKey, bot.ApiKeyHash, bot.ApiKeySalt))
-            {
-                return GenerateJwtToken(bot.Id.ToString(), PoliciesExtentions.Bot);
+                return GenerateJwtToken(
+                    practicant.Id.ToString(),
+                    practicant.Type == PracticantType.User ?
+                        PoliciesExtentions.User :
+                        PoliciesExtentions.Bot);
             }
 
             return null;

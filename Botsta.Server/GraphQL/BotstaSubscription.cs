@@ -46,7 +46,7 @@ namespace Botsta.Server.GraphQL
 
             return messages
                 .Where(m => !string.IsNullOrEmpty(m?.ChatroomId.ToString())
-                    && user.Chatrooms.Select(c => c.Id).Contains(m.ChatroomId));
+                    && user.ChatPracticant.Chatrooms.Select(c => c.Id).Contains(m.ChatroomId));
         }
 
         private Message ResolveMessage(IResolveFieldContext context)

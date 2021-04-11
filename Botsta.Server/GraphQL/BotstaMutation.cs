@@ -15,19 +15,19 @@ namespace Botsta.Server.GraphQL
 {
     public class BotstaMutation : ObjectGraphType
     {
-        public BotstaMutation(IBotstaDbRepository dbContext, IIdentityService identityManager, ISessionController session, IChatNotifier notifier)
+        public BotstaMutation(IBotstaDbRepository repository, IIdentityService identityManager, ISessionController session, IChatNotifier notifier)
         {
-            Field<StringGraphType>("login",
+            FieldAsync<StringGraphType>("login",
                 arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username" },
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "password" }
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "secret" }
                     ),
-                resolve: context =>
+                resolve: async context =>
                 {
-                    var username = context.GetArgument<string>("username");
-                    var password = context.GetArgument<string>("password");
+                    var name = context.GetArgument<string>("name");
+                    var secret = context.GetArgument<string>("secret");
 
-                    return identityManager.LoginUser(username, password);
+                    return await identityManager.LoginAsync(name, secret);
                 }
             );
 
@@ -42,20 +42,7 @@ namespace Botsta.Server.GraphQL
                     var password = context.GetArgument<string>("password");
 
                     await identityManager.RegisterUserAsync(username, password);
-                    return identityManager.LoginUser(username, password);
-                }
-            );
-
-            Field<StringGraphType>("loginBot",
-                arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "botName" },
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "apiKey" }
-                    ),
-                resolve: context =>
-                {
-                    var botName = context.GetArgument<string>("botName");
-                    var apiKey = context.GetArgument<string>("apiKey");
-                    return identityManager.LoginBot(botName, apiKey);
+                    return await identityManager.LoginAsync(username, password);
                 }
             );
 
@@ -75,31 +62,28 @@ namespace Botsta.Server.GraphQL
 
             FieldAsync<ChatroomType>("newChatroom",
                 arguments: new QueryArguments(
-                    new QueryArgument<ListGraphType<StringGraphType>> { Name = "userIds" },
-                    new QueryArgument<ListGraphType<StringGraphType>> { Name = "botIds" }
+                    new QueryArgument<ListGraphType<StringGraphType>> { Name = "practicantIds" }
                     ),
                 description: "Create a new chatroom",
                 resolve: async context =>
                 {
                     var currentUser = session.GetUser();
 
-                    var userIds = context.GetArgument<string[]>("userIds")?
+                    var practicantIds = context.GetArgument<string[]>("practicantIds")?
                     .ToList().ToHashSet();
 
-                    userIds.Add(currentUser.Id.ToString()) ;
+                    practicantIds.Add(currentUser.Id.ToString()) ;
 
                     var botIds = context.GetArgument<string[]>("botIds");
 
-                    var users = userIds.Select(u => dbContext.GetUserById(u));
-                    var bots = botIds.Select(u => dbContext.GetBotById(u));
+                    var practicants = repository.GetChatPracticants(practicantIds.Select(id => Guid.Parse(id))).ToList();
 
                     var chatroom = new Chatroom {
                         Id = Guid.NewGuid(),
-                        Users = users.ToList(),
-                        Bots = bots.ToList()
+                        ChatPracticants = practicants,
                     };
 
-                    await dbContext.AddChatroomToDbAsync(chatroom);
+                    await repository.AddChatroomToDbAsync(chatroom);
 
                     return chatroom;
                 }
@@ -122,13 +106,12 @@ namespace Botsta.Server.GraphQL
                     var newMessage = new Message
                     {
                         Id = Guid.NewGuid(),
-                        MessageJson = messageJson,
+                        Msg = messageJson,
                         ChatroomId = Guid.Parse(chatroomId),
                         SenderId = user.Id,
-                        SenderType = SenderType.User
                     };
 
-                    await dbContext.AddMessageToDb(newMessage);
+                    await repository.AddMessageToDb(newMessage);
 
                     notifier.NotifyChat(newMessage);
 

@@ -8,8 +8,8 @@ namespace Botsta.Server.GraphQL.Types
     {
         public UserType()
         {
-            Field("userId", u => u.Id.ToString());
-            Field(u => u.Username);
+            Field("id", u => u.Id.ToString());
+            Field("username", u => u.ChatPracticant.Name);
         }
     }
 }
