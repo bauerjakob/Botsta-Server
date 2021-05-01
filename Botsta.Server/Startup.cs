@@ -31,6 +31,7 @@ using System.IO;
 using GraphQL.Server.Transports.AspNetCore.NewtonsoftJson;
 using System.Runtime.Serialization.Formatters.Binary;
 using Botsta.DataStorage;
+using Botsta.Server.GraphQL.Types;
 
 namespace Botsta.Server
 {
@@ -116,6 +117,8 @@ namespace Botsta.Server
             services.AddScoped<BotstaQuery>();
             services.AddScoped<BotstaMutation>();
             services.AddScoped<BotstaSubscription>();
+            services.AddScoped<GraphChatroomType>();
+            services.AddScoped<GraphMessageType>();
             services.AddScoped<ISchema, BotstaSchema>();
 
             services.AddScoped<ISessionController, SessionController>();
@@ -159,7 +162,7 @@ namespace Botsta.Server
                 });
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

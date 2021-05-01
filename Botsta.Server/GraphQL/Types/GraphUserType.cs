@@ -4,9 +4,9 @@ using GraphQL.Types;
 
 namespace Botsta.Server.GraphQL.Types
 {
-    public class UserType : ObjectGraphType<User>
+    public class GraphUserType : ObjectGraphType<User>
     {
-        public UserType()
+        public GraphUserType()
         {
             Field("id", u => u.Id.ToString());
             Field("username", u => u.ChatPracticant.Name);

@@ -92,6 +92,9 @@ namespace Botsta.DataStorage.Migrations
                         .HasColumnType("text")
                         .HasColumnName("Message");
 
+                    b.Property<DateTimeOffset>("SendTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uuid");
 

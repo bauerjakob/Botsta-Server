@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Botsta.DataStorage.Migrations
 {
     [DbContext(typeof(BotstaDbContext))]
-    [Migration("20210411120258_Initial")]
+    [Migration("20210501135158_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,6 +93,9 @@ namespace Botsta.DataStorage.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("Message");
+
+                    b.Property<DateTimeOffset>("SendTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uuid");

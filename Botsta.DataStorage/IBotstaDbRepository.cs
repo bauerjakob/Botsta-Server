@@ -7,6 +7,9 @@ namespace Botsta.DataStorage
 {
     public interface IBotstaDbRepository
     {
+        public Task<Chatroom> GetChatroomByIdAsync(Guid id);
+
+        public Task<ChatPracticant> GetChatPracticantAsync(Guid id);
         public IEnumerable<ChatPracticant> GetChatPracticants(IEnumerable<Guid> ids);
         public Task<ChatPracticant> GetChatPracticantAsync(string name);
 

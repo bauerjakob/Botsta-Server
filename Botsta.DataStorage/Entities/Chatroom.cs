@@ -12,6 +12,11 @@ namespace Botsta.DataStorage.Entities
         [Key]
         public Guid Id { get; set; }
 
+        [Required]
+        public ChatroomType Type;
+
+        public string Name;
+
         public virtual IEnumerable<ChatPracticant> ChatPracticants { get; set; } = new List<ChatPracticant>();
 
         public virtual IEnumerable<Message> Messages { get; set; } = new List<Message>();

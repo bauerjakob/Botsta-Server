@@ -60,8 +60,36 @@ namespace Botsta.Server.GraphQL
                }
                ).AuthorizeWith(PoliciesExtentions.User);
 
-            FieldAsync<ChatroomType>("newChatroom",
+            FieldAsync<GraphChatroomType>("newChatroomSingle",
                 arguments: new QueryArguments(
+                    new QueryArgument<StringGraphType> { Name = "practicantId" }
+                    ),
+                description: "Create a new chatroom",
+                resolve: async context =>
+                {
+                    var currentUser = session.GetUser();
+
+                    var practicantId = context.GetArgument<string>("practicantId");
+
+
+                    var practicant = await repository.GetChatPracticantAsync(Guid.Parse(practicantId));
+
+                    var chatroom = new Chatroom
+                    {
+                        Id = Guid.NewGuid(),
+                        ChatPracticants = new[] { currentUser.ChatPracticant, practicant },
+                        Type = ChatroomType.Single
+                    };
+
+                    await repository.AddChatroomToDbAsync(chatroom);
+
+                    return chatroom;
+                }
+            ).AuthorizeWith(PoliciesExtentions.User);
+
+            FieldAsync<GraphChatroomType>("newChatroomGroup",
+                arguments: new QueryArguments(
+                    new QueryArgument<StringGraphType> { Name = "name" },
                     new QueryArgument<ListGraphType<StringGraphType>> { Name = "practicantIds" }
                     ),
                 description: "Create a new chatroom",
@@ -69,18 +97,21 @@ namespace Botsta.Server.GraphQL
                 {
                     var currentUser = session.GetUser();
 
+                    string chatroomName = context.GetArgument<string>("name");
+
                     var practicantIds = context.GetArgument<string[]>("practicantIds")?
                     .ToList().ToHashSet();
 
-                    practicantIds.Add(currentUser.Id.ToString()) ;
-
-                    var botIds = context.GetArgument<string[]>("botIds");
+                    practicantIds.Add(currentUser.Id.ToString());
 
                     var practicants = repository.GetChatPracticants(practicantIds.Select(id => Guid.Parse(id))).ToList();
 
-                    var chatroom = new Chatroom {
+                    var chatroom = new Chatroom
+                    {
                         Id = Guid.NewGuid(),
                         ChatPracticants = practicants,
+                        Type = ChatroomType.Group,
+                        Name = chatroomName
                     };
 
                     await repository.AddChatroomToDbAsync(chatroom);
@@ -90,7 +121,7 @@ namespace Botsta.Server.GraphQL
             ).AuthorizeWith(PoliciesExtentions.User);
 
 
-            FieldAsync<MessageType>("postMessage",
+            FieldAsync<GraphMessageType>("postMessage",
                 description: "Post message to chatroom",
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType> { Name = "chatroomId" },
@@ -109,6 +140,7 @@ namespace Botsta.Server.GraphQL
                         Msg = messageJson,
                         ChatroomId = Guid.Parse(chatroomId),
                         SenderId = user.Id,
+                        SendTime = DateTimeOffset.UtcNow
                     };
 
                     await repository.AddMessageToDb(newMessage);

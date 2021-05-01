@@ -30,6 +30,13 @@ namespace Botsta.DataStorage
                 );
         }
 
+        public async Task<ChatPracticant> GetChatPracticantAsync(Guid id)
+        {
+            return await _dbContext.ChatPracticants.SingleAsync(
+                    c => c.Id == id
+                );
+        }
+
         public async Task AddUserToDb(User user)
         {
             if (user is null)
@@ -79,6 +86,7 @@ namespace Botsta.DataStorage
             return _dbContext.Users?
                 .Include(u => u.ChatPracticant)
                     .ThenInclude(u => u.Chatrooms)
+                    .ThenInclude(c => c.ChatPracticants)
                 .Include(u => u.Bots)
                 .Single(u => u.ChatPracticant.Name == username);
         }
@@ -88,8 +96,18 @@ namespace Botsta.DataStorage
             return _dbContext.Users?
                 .Include(u => u.ChatPracticant)
                     .ThenInclude(u => u.Chatrooms)
+                    .ThenInclude(c => c.ChatPracticants)
                 .Include(u => u.Bots)
                 .Single(u => u.Id.ToString() == userId);
+        }
+
+
+        public async Task<Chatroom> GetChatroomByIdAsync(Guid id)
+        {
+            return await _dbContext.Chatrooms?
+                .Include(c => c.ChatPracticants)
+                .Include(c => c.Messages)
+                .SingleAsync(c => c.Id.Equals(id));
         }
 
         public IEnumerable<User> GetAllUsers()

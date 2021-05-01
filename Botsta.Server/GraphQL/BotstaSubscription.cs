@@ -30,7 +30,7 @@ namespace Botsta.Server.GraphQL
             AddField(new EventStreamFieldType
             {
                 Name = "messageReceived",
-                Type = typeof(MessageType),
+                Type = typeof(GraphMessageType),
                 Arguments = new QueryArguments(
                     new QueryArgument<StringGraphType> { Name = "token" }
                     ),

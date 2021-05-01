@@ -7,6 +7,7 @@ using Botsta.Server.Configuration;
 using Botsta.Server.Extentions;
 using Botsta.Server.GraphQL.Types;
 using Botsta.Server.Middelware;
+using GraphQL;
 using GraphQL.Authorization;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Http;
@@ -26,24 +27,39 @@ namespace Botsta.Server.GraphQL
 
             this.AuthorizeWith(PoliciesExtentions.User);
 
-            Field<UserType>(
+            Field<GraphUserType>(
                 "whoami",
                 description: "Returns informations about the current user.",
                 resolve: c => session.GetUser());
 
-            Field<ListGraphType<UserType>>(
+            Field<ListGraphType<GraphUserType>>(
                 "getAllUsers",
                 "Returns list of all registerd users",
                 resolve: c => dbContext.GetAllUsers()
                 );
 
-            Field<ListGraphType<StringGraphType>>(
+            Field<ListGraphType<GraphChatroomType>>(
                 "chatrooms",
                 description: "Returns all chatrooms of current user.",
                 resolve: c =>
                 {
                     var user = session.GetUser();
-                    return user.ChatPracticant.Chatrooms.Select(u => u.Id.ToString());
+                    return user.ChatPracticant.Chatrooms;
+                });
+
+            FieldAsync<GraphChatroomType>(
+                "chatroom",
+                arguments: new QueryArguments
+                {
+                    new QueryArgument<StringGraphType> {Name = "chatroomId"}
+                },
+                description: "Returns the chtroom behind the given id.",
+                resolve: async c =>
+                {
+                    var chatroomId = c.GetArgument<Guid>("chatroomId");
+
+                    var chatroom = await dbContext.GetChatroomByIdAsync(chatroomId);
+                    return chatroom;
                 });
 
         }

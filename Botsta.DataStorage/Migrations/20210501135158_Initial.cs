@@ -82,7 +82,8 @@ namespace Botsta.DataStorage.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Message = table.Column<string>(type: "text", nullable: false),
                     ChatroomId = table.Column<Guid>(type: "uuid", nullable: false),
-                    SenderId = table.Column<Guid>(type: "uuid", nullable: false)
+                    SenderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SendTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -23,6 +23,9 @@ namespace Botsta.DataStorage.Entities
         [ForeignKey(nameof(Sender))]
         public Guid SenderId { get; set; }
 
+        [Required]
+        public DateTimeOffset SendTime { get; set; }
+
         public ChatPracticant Sender { get; set; }
         public Chatroom Chatroom { get; set; }
     }
