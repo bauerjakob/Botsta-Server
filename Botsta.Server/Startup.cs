@@ -64,7 +64,7 @@ namespace Botsta.Server
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero
+                    ClockSkew = TimeSpan.FromMinutes(1),
                 };
             }
         }
@@ -134,6 +134,7 @@ namespace Botsta.Server
                 {
                     options.AddPolicy(PoliciesExtentions.User, p => p.UserPolicy());
                     options.AddPolicy(PoliciesExtentions.Bot, p => p.BotPolicy());
+                    options.AddPolicy(PoliciesExtentions.RefreshToken, p => p.RefreshTokenPolicy());
                 }
             )
            .AddErrorInfoProvider(opt => opt.ExposeExceptionStackTrace = true)

@@ -10,6 +10,7 @@ namespace Botsta.Server.Extentions
     {
         public const string User = "User";
         public const string Bot = "Bot";
+        public const string RefreshToken = "RefreshToken";
 
 
         public static AuthorizationPolicy UserPolicy(this AuthorizationPolicyBuilder builder)
@@ -25,6 +26,14 @@ namespace Botsta.Server.Extentions
             return builder
                 .RequireAuthenticatedUser()
                 .RequireRole(Bot)
+                .Build();
+        }
+
+        public static AuthorizationPolicy RefreshTokenPolicy(this AuthorizationPolicyBuilder builder)
+        {
+            return builder
+                .RequireAuthenticatedUser()
+                .RequireRole(RefreshToken)
                 .Build();
         }
     }

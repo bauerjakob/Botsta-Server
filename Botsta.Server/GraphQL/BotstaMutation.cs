@@ -17,7 +17,7 @@ namespace Botsta.Server.GraphQL
     {
         public BotstaMutation(IBotstaDbRepository repository, IIdentityService identityManager, ISessionController session, IChatNotifier notifier)
         {
-            FieldAsync<StringGraphType>("login",
+            FieldAsync<LoginGraphType>("login",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "secret" }
@@ -27,7 +27,8 @@ namespace Botsta.Server.GraphQL
                     var name = context.GetArgument<string>("name");
                     var secret = context.GetArgument<string>("secret");
 
-                    return await identityManager.LoginAsync(name, secret);
+                    var response =  await identityManager.LoginAsync(name, secret);
+                    return response;
                 }
             );
 
@@ -59,6 +60,19 @@ namespace Botsta.Server.GraphQL
                    return apiKey;
                }
                ).AuthorizeWith(PoliciesExtentions.User);
+
+            FieldAsync<RefreshTokenGraphType>("refreshToken",
+                arguments: new QueryArguments(
+                    //new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "refreshToken" }
+                    ),
+                resolve: async context =>
+                {
+                    //var refreshToken = context.GetArgument<string>("refreshToken");
+                    var claims = session.GetClaims();
+                    var response = await identityManager.RefreshTokenAsync(claims);
+                    return response;
+                }
+            ).AuthorizeWith(PoliciesExtentions.RefreshToken);
 
             FieldAsync<GraphChatroomType>("newChatroomSingle",
                 arguments: new QueryArguments(

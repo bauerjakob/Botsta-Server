@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using Botsta.DataStorage;
+using Botsta.Server.Extentions;
+using System.Security.Claims;
 
 namespace Botsta.Server.Middelware
 {
@@ -22,17 +24,19 @@ namespace Botsta.Server.Middelware
 
         public User GetUser()
         {
-            var userId = _httpContext?.HttpContext?.User?.Claims
-                .Single(c => c.Properties.Any() ? c.Properties.FirstOrDefault().Value == JwtRegisteredClaimNames.Sub : false)?.Value;
-
+            var userId = _httpContext?.HttpContext?.User?.Claims.GetSubject();
             return _dbContext.GetUserById(userId);
+        }
+
+        public ClaimsPrincipal GetClaims()
+        {
+            return _httpContext?.HttpContext?.User;
         }
 
         public User GetUser(string token)
         {
             var principal = _identityService.ValidateToken(token);
-            var userId = principal.Claims
-                .Single(c => c.Properties.Any() ? c.Properties.FirstOrDefault().Value == JwtRegisteredClaimNames.Sub : false)?.Value;
+            var userId = principal.Claims.GetSubject();
 
             return _dbContext.GetUserById(userId);
         }

@@ -19,6 +19,7 @@
     <Folder Include="Extentions\" />
     <Folder Include="Middelware\" />
     <Folder Include="Services\" />
+    <Folder Include="Dto\" />
   </ItemGroup>
     <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.4">

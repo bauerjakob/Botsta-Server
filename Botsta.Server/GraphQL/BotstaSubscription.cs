@@ -40,9 +40,9 @@ namespace Botsta.Server.GraphQL
         }
 
         private IObservable<Message> Subscribe(IResolveEventStreamContext context) {
-            var messages =  _notifier.Messages();
             var token = context.GetArgument<string>("token");
             var user = _session.GetUser(token);
+            var messages = _notifier.Messages();
 
             return messages
                 .Where(m => !string.IsNullOrEmpty(m?.ChatroomId.ToString())

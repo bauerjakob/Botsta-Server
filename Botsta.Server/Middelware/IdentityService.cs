@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Principal;
 using Botsta.DataStorage;
+using Botsta.Server.Dto;
 
 namespace Botsta.Server.Middelware
 {
@@ -22,27 +23,29 @@ namespace Botsta.Server.Middelware
 
         private readonly ILogger<IdentityService> _logger;
         private readonly AppConfig _appConfig;
-        private readonly IBotstaDbRepository _dbContext;
+        private readonly IBotstaDbRepository _repository;
         private readonly TokenValidationParameters _tokenValidationParameters;
+        private readonly TimeSpan _refreshTokenExpirationTimeSpan;
+        private readonly TimeSpan _tokenExpirationTimeSpan;
 
 
         private const int TOKEN_ITERATIONS = 10000;
-        private static readonly TimeSpan TOKEN_LIFETIME = TimeSpan.FromMinutes(30);
 
-
-        public IdentityService(ILogger<IdentityService> logger, AppConfig appConfig, IBotstaDbRepository dbContext, TokenValidationParameters tokenValidationParameters)
+        public IdentityService(ILogger<IdentityService> logger, AppConfig appConfig, IBotstaDbRepository repository, TokenValidationParameters tokenValidationParameters)
         {
             _logger = logger;
             _appConfig = appConfig;
-            _dbContext = dbContext;
+            _repository = repository;
             _tokenValidationParameters = tokenValidationParameters;
+            _refreshTokenExpirationTimeSpan = TimeSpan.FromDays(_appConfig.RefreshTokenExpirationDays);
+            _tokenExpirationTimeSpan = TimeSpan.FromMinutes(_appConfig.TokenExpirationMinutes);
         }
 
         public async Task<User> RegisterUserAsync(string username, string password)
         {
             (var hash, var salt) = HashPassword(password);
 
-            var user = await _dbContext.AddUserToDbAsync(username, hash, salt);
+            var user = await _repository.AddUserToDbAsync(username, hash, salt);
 
             return user;
         }
@@ -53,10 +56,32 @@ namespace Botsta.Server.Middelware
 
             (var hash, var salt) = HashPassword(apiKey);
 
-            var bot = await _dbContext.AddBotToDbAsync(owner, botName, hash, salt);
+            var bot = await _repository.AddBotToDbAsync(owner, botName, hash, salt);
 
             return (apiKey, bot);
         }
+
+        public async Task<RefreshTokenResponse> RefreshTokenAsync(string refreshToken)
+        {
+
+            var claims = ValidateToken(refreshToken);
+            return await RefreshTokenAsync(claims);
+        }
+
+        public async Task<RefreshTokenResponse> RefreshTokenAsync(ClaimsPrincipal claims)
+        {
+            var practicantId = claims.Claims.GetSubject();
+            var chatPracticant = await _repository.GetChatPracticantAsync(Guid.Parse(practicantId));
+
+            var generatedToken = GenerateJwtToken(practicantId,
+                chatPracticant.Type == PracticantType.User ? PoliciesExtentions.User : PoliciesExtentions.Bot, DateTime.UtcNow.Add(_tokenExpirationTimeSpan));
+
+            return new RefreshTokenResponse
+            {
+                Token = generatedToken.token
+            };
+        }
+
 
         private string GenerateApiKey()
         {
@@ -66,43 +91,62 @@ namespace Botsta.Server.Middelware
               .Select(s => s[_random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<string> LoginAsync(string name, string secret)
+        public async Task<LoginResponse> LoginAsync(string name, string secret)
         {
-            var practicant = await _dbContext.GetChatPracticantAsync(name);
+            var practicant = await _repository.GetChatPracticantAsync(name);
 
             if (practicant != null
                 && VerifyPassword(secret, practicant.SecretHash, practicant.SecretSalt))
             {
-                return GenerateJwtToken(
+
+                var refreshToken = GenerateJwtToken(
+                    practicant.Id.ToString(),
+                    PoliciesExtentions.RefreshToken,
+                    DateTime.UtcNow.Add(_refreshTokenExpirationTimeSpan));
+
+                var token = GenerateJwtToken(
                     practicant.Id.ToString(),
                     practicant.Type == PracticantType.User ?
                         PoliciesExtentions.User :
-                        PoliciesExtentions.Bot);
+                        PoliciesExtentions.Bot,
+                    DateTime.UtcNow.Add(_tokenExpirationTimeSpan));
+
+                return new LoginResponse
+                {
+                    Token = token.token,
+                    RefreshToken = refreshToken.token,
+                };
             }
 
-            return null;
+            return new LoginResponse
+            {
+                HasError = true,
+                ErrorCode = "login.failed",
+                ErrorMessage = "Login failed"
+            };
         }
 
-        string GenerateJwtToken(string subject, string role)
+        (string token, Guid tokenId) GenerateJwtToken(string subject, string role, DateTime? expireDate)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appConfig.JwtSecret));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var tokenId = Guid.NewGuid();
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, subject),
                 new Claim("role", role),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, tokenId.ToString()),
             };
 
             var token = new JwtSecurityToken(
                 issuer: _appConfig.JwtIssuer,
                 audience: _appConfig.JwtAudience,
                 claims: claims,
-                expires: DateTime.UtcNow.Add(TOKEN_LIFETIME),
+                expires: expireDate,
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return (new JwtSecurityTokenHandler().WriteToken(token), tokenId);
         }
 
         public ClaimsPrincipal ValidateToken(string token)
