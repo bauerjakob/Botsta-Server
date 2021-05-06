@@ -32,7 +32,9 @@ namespace Botsta.DataStorage
 
         public async Task<ChatPracticant> GetChatPracticantAsync(Guid id)
         {
-            return await _dbContext.ChatPracticants.SingleAsync(
+            return await _dbContext.ChatPracticants
+                .Include(c => c.Chatrooms)
+                .SingleAsync(
                     c => c.Id == id
                 );
         }

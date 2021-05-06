@@ -175,7 +175,9 @@ namespace Botsta.Server
                 endpoints.MapControllers();
             });
 
-            app.UseWebSockets();
+            app.UseWebSockets(
+                new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(5) }
+                );
             app.UseGraphQLWebSockets<ISchema>();
             app.UseGraphQL<ISchema>();
 

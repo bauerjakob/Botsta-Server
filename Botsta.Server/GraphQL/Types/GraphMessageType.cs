@@ -14,12 +14,6 @@ namespace Botsta.Server.GraphQL.Types
             Field("senderId", x => x.SenderId);
             Field("sendTime", x => x.SendTime);
             Field("chatroomId", x => x.ChatroomId);
-            Field<BooleanGraphType>("senderIsMe", resolve: c => {
-                var user = session.GetUser();
-                var message = c.Source;
-
-                return message.SenderId == user.Id;
-            });
         }
     }
 }

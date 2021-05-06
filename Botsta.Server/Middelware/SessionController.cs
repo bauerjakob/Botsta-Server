@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Botsta.DataStorage;
 using Botsta.Server.Extentions;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Botsta.Server.Middelware
 {
@@ -39,6 +40,14 @@ namespace Botsta.Server.Middelware
             var userId = principal.Claims.GetSubject();
 
             return _dbContext.GetUserById(userId);
+        }
+
+        public async Task<ChatPracticant> GetPracticantFromToken(string token)
+        {
+            var principal = _identityService.ValidateToken(token);
+            var practicantId = principal.Claims.GetSubject();
+
+            return await _dbContext.GetChatPracticantAsync(Guid.Parse(practicantId));
         }
     }
 }
