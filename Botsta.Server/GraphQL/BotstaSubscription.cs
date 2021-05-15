@@ -52,7 +52,7 @@ namespace Botsta.Server.GraphQL
                         return false;
                     }
 
-                    var practicant = _session.GetPracticantFromToken(refreshToken).Result;
+                    var practicant = _session.GetChatPracticantFromToken(refreshToken).Result;
                     return practicant.Chatrooms.Select(c => c.Id).Contains(m.ChatroomId);
                 });
         }

@@ -119,6 +119,7 @@ namespace Botsta.Server
             services.AddScoped<BotstaSubscription>();
             services.AddScoped<GraphChatroomType>();
             services.AddScoped<GraphMessageType>();
+            services.AddScoped<ChatPracticantGraphType>();
             services.AddScoped<ISchema, BotstaSchema>();
 
             services.AddScoped<ISessionController, SessionController>();

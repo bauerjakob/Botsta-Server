@@ -42,7 +42,13 @@ namespace Botsta.Server.Middelware
             return _dbContext.GetUserById(userId);
         }
 
-        public async Task<ChatPracticant> GetPracticantFromToken(string token)
+        public async Task<ChatPracticant> GetChatPracticantAsync()
+        {
+            var practicantId = _httpContext?.HttpContext?.User?.Claims.GetSubject();
+            return await _dbContext.GetChatPracticantAsync(Guid.Parse(practicantId));
+        }
+
+        public async Task<ChatPracticant> GetChatPracticantFromToken(string token)
         {
             var principal = _identityService.ValidateToken(token);
             var practicantId = principal.Claims.GetSubject();

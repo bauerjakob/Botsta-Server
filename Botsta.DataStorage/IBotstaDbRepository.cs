@@ -16,6 +16,7 @@ namespace Botsta.DataStorage
         public IEnumerable<Message> GetMessages(string chatroomId);
 
         public IEnumerable<User> GetAllUsers();
+        public IEnumerable<ChatPracticant> GetAllChatPracticants();
 
         public User GetUserByUsername(string username);
 

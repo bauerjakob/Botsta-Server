@@ -146,14 +146,14 @@ namespace Botsta.Server.GraphQL
                     var chatroomId = context.GetArgument<string>("chatroomId");
                     var messageJson = context.GetArgument<string>("message");
 
-                    var user = session.GetUser();
+                    var  chatPracticant = await session.GetChatPracticantAsync();
 
                     var newMessage = new Message
                     {
                         Id = Guid.NewGuid(),
                         Msg = messageJson,
                         ChatroomId = Guid.Parse(chatroomId),
-                        SenderId = user.Id,
+                        SenderId = chatPracticant.Id,
                         SendTime = DateTimeOffset.UtcNow
                     };
 
@@ -163,7 +163,7 @@ namespace Botsta.Server.GraphQL
 
                     return newMessage;
                 }
-            ).AuthorizeWith(PoliciesExtentions.User);
+            ).RequiresAuthorization();
         }
     }
 }

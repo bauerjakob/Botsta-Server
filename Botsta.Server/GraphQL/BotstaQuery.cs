@@ -18,25 +18,23 @@ namespace Botsta.Server.GraphQL
     {
         public BotstaQuery(IBotstaDbRepository dbContext, ISessionController session)
         {
-            //Field(
-            //    name: "messages",
-            //    type: typeof(ListGraphType<MessageType>),
-            //    resolve: context => dbContext.GetMessages(),
-            //    description: "Returns a list all messages"
-            //).AuthorizeWith(PoliciesExtentions.User);
-
-            this.AuthorizeWith(PoliciesExtentions.User);
-
-            Field<GraphUserType>(
+            Field<ChatPracticantGraphType>(
                 "whoami",
                 description: "Returns informations about the current user.",
-                resolve: c => session.GetUser());
+                resolve: c => session.GetChatPracticantAsync())
+                .RequiresAuthorization();
 
             Field<ListGraphType<GraphUserType>>(
                 "allUsers",
-                "Returns list of all registerd users",
+                "Returns list of all registerd users (only users not bots)",
                 resolve: c => dbContext.GetAllUsers()
-                );
+                ).AuthorizeWith(PoliciesExtentions.User);
+
+            Field<ListGraphType<ChatPracticantGraphType>>(
+                "allChatPracticants",
+                "Returns list of all registerd chat practicants (users and bots)",
+                resolve: c => dbContext.GetAllChatPracticants()
+                ).AuthorizeWith(PoliciesExtentions.User);
 
             Field<ListGraphType<GraphChatroomType>>(
                 "chatrooms",
@@ -45,7 +43,7 @@ namespace Botsta.Server.GraphQL
                 {
                     var user = session.GetUser();
                     return user.ChatPracticant.Chatrooms;
-                });
+                }).AuthorizeWith(PoliciesExtentions.User);
 
             FieldAsync<GraphChatroomType>(
                 "chatroom",
@@ -60,7 +58,7 @@ namespace Botsta.Server.GraphQL
 
                     var chatroom = await dbContext.GetChatroomByIdAsync(chatroomId);
                     return chatroom;
-                });
+                }).AuthorizeWith(PoliciesExtentions.User);
 
         }
     }

@@ -124,6 +124,12 @@ namespace Botsta.DataStorage
                 .ToList();
         }
 
+        public IEnumerable<ChatPracticant> GetAllChatPracticants()
+        {
+            return _dbContext.ChatPracticants
+                .Include(c => c.Chatrooms);
+        }
+
         public Bot GetBotById(string botId)
         {
             return _dbContext.Bots

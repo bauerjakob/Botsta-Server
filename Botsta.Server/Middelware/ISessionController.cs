@@ -10,6 +10,8 @@ namespace Botsta.Server.Middelware
         public ClaimsPrincipal GetClaims();
         public User GetUser();
         public User GetUser(string token);
-        public Task<ChatPracticant> GetPracticantFromToken(string token);
+
+        public Task<ChatPracticant> GetChatPracticantAsync();
+        public Task<ChatPracticant> GetChatPracticantFromToken(string token);
     }
 }
