@@ -36,18 +36,25 @@ namespace Botsta.Server.GraphQL
                     new QueryArgument<StringGraphType> { Name = "refreshToken" }
                     ),
                 Resolver = new FuncFieldResolver<Message>(ResolveMessage),
-                AsyncSubscriber = new AsyncEventStreamResolver<Message>(SubscribeAsync)
+                Subscriber = new EventStreamResolver<Message>(Subscribe)
             });
         }
 
-        private async Task<IObservable<Message>> SubscribeAsync(IResolveEventStreamContext context) {
+        private IObservable<Message> Subscribe(IResolveEventStreamContext context) {
             var refreshToken = context.GetArgument<string>("refreshToken");
-            var practicant = await _session.GetPracticantFromToken(refreshToken);
             var messages = _notifier.Messages();
 
             return messages
-                .Where(m => !string.IsNullOrEmpty(m?.ChatroomId.ToString())
-                    && practicant.Chatrooms.Select(c => c.Id).Contains(m.ChatroomId));
+                .Where(
+                m => {
+                    if (string.IsNullOrEmpty(m?.ChatroomId.ToString()))
+                    {
+                        return false;
+                    }
+
+                    var practicant = _session.GetPracticantFromToken(refreshToken).Result;
+                    return practicant.Chatrooms.Select(c => c.Id).Contains(m.ChatroomId);
+                });
         }
 
         private Message ResolveMessage(IResolveFieldContext context)

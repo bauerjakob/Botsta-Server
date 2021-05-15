@@ -32,7 +32,7 @@ namespace Botsta.Server.GraphQL
                 }
             );
 
-            FieldAsync<StringGraphType>("register",
+            FieldAsync<LoginGraphType>("register",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username" },
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "password" }

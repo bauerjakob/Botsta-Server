@@ -33,7 +33,7 @@ namespace Botsta.Server.GraphQL
                 resolve: c => session.GetUser());
 
             Field<ListGraphType<GraphUserType>>(
-                "getAllUsers",
+                "allUsers",
                 "Returns list of all registerd users",
                 resolve: c => dbContext.GetAllUsers()
                 );

@@ -18,7 +18,7 @@ namespace Botsta.Server.GraphQL.Types
                 var chatroom = c.Source;
                 return chatroom.Name ?? string.Join(", ", c.Source.ChatPracticants.Where(p => p.Id != user.Id).Select(c => c.Name).OrderBy(n => n));
                 });
-            Field<GraphMessageType>("latestMessage", resolve: c => c.Source.Messages.LastOrDefault());
+            Field<GraphMessageType>("latestMessage", resolve: c => c.Source.Messages?.OrderBy(m => m.SendTime).LastOrDefault());
             Field<ListGraphType<GraphMessageType>>(
                 "messages",
                 resolve: c => {

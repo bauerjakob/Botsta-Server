@@ -98,7 +98,10 @@ namespace Botsta.DataStorage
             return _dbContext.Users?
                 .Include(u => u.ChatPracticant)
                     .ThenInclude(u => u.Chatrooms)
-                    .ThenInclude(c => c.ChatPracticants)
+                        .ThenInclude(u => u.Messages)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(u => u.Chatrooms)
+                        .ThenInclude(u => u.ChatPracticants)
                 .Include(u => u.Bots)
                 .Single(u => u.Id.ToString() == userId);
         }
