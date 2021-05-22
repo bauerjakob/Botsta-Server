@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  botsta-db:
+    image: postgres:${PSQL_TAG}
+    restart: always
+    ports:
+      - 12345:5432
+    volumes:
+      -  ./mount/psql:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${PSQL_USER}
+      POSTGRES_PASSWORD: ${PSQL_PASSWORD}
+      POSTGRES_DB: ${PSQL_DATABASE}
+
+  botsta-server:
+    image: botsta-server:0.1
+    ports:
+      - 5000:80
+    build: 
+      context: .
+    depends_on: 
+        - botsta-db
+    environment:
+      AppConfig__JwtIssuer: https://localhost:5000
+      AppConfig__JwtAudience: https://localhost:5000
+      AppConfig__JwtSecret: secretaiufaefigpbaegipaebgaiergb123456sarg
+      ConnectionStrings__DefaultConnection: Server=botsta-db;Port=5432;Database=srv_botsta_local;User Id=usr_botsta_local;Password=password;
+

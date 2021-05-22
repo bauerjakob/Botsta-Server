@@ -36,7 +36,7 @@ namespace Botsta.Server.GraphQL
                     new QueryArgument<StringGraphType> { Name = "refreshToken" }
                     ),
                 Resolver = new FuncFieldResolver<Message>(ResolveMessage),
-                Subscriber = new EventStreamResolver<Message>(Subscribe)
+                Subscriber = new EventStreamResolver<Message>(Subscribe),
             });
         }
 

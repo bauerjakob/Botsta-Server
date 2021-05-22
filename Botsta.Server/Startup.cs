@@ -128,6 +128,7 @@ namespace Botsta.Server
             services.AddGraphQL((options, provider) =>
             {
                 options.EnableMetrics = true;
+                //options.MaxParallelExecutionCount = 20;
                 var logger = provider.GetRequiredService<ILogger<Startup>>();
                 options.UnhandledExceptionDelegate = ctx => logger.LogError(ctx.OriginalException, string.Empty);
             })
@@ -143,8 +144,6 @@ namespace Botsta.Server
            .AddWebSockets()
            .AddDataLoader()
            .AddGraphTypes(typeof(BotstaSchema));
-
-            
 
             services.Configure<KestrelServerOptions>(options => options.AllowSynchronousIO = true);
             services.Configure<IISServerOptions>(options => options.AllowSynchronousIO = true);
@@ -164,6 +163,8 @@ namespace Botsta.Server
                 });
             }
 
+            MigrateDatabase(app);
+
             //app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -177,7 +178,7 @@ namespace Botsta.Server
             });
 
             app.UseWebSockets(
-                new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(5) }
+                new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(3) }
                 );
             app.UseGraphQLWebSockets<ISchema>();
             app.UseGraphQL<ISchema>();
@@ -188,6 +189,15 @@ namespace Botsta.Server
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "Botsta API");
             });
+        }
+
+
+        private void MigrateDatabase(IApplicationBuilder app)
+        {
+            using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                scope.ServiceProvider.GetRequiredService<BotstaDbContext>().Database.Migrate();
+            }
         }
     }
 }
