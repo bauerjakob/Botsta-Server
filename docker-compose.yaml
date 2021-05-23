@@ -12,6 +12,11 @@ services:
       POSTGRES_USER: ${PSQL_USER}
       POSTGRES_PASSWORD: ${PSQL_PASSWORD}
       POSTGRES_DB: ${PSQL_DATABASE}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PSQL_USER} -d ${PSQL_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   botsta-server:
     image: botsta-server:0.1
@@ -20,8 +25,12 @@ services:
     build: 
       context: .
     depends_on: 
+      botsta-db:
+        condition: service_healthy
+    links:
         - botsta-db
     environment:
+      AutoMigrate: 'true'
       AppConfig__JwtIssuer: https://localhost:5000
       AppConfig__JwtAudience: https://localhost:5000
       AppConfig__JwtSecret: secretaiufaefigpbaegipaebgaiergb123456sarg

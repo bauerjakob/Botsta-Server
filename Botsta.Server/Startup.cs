@@ -32,6 +32,8 @@ using GraphQL.Server.Transports.AspNetCore.NewtonsoftJson;
 using System.Runtime.Serialization.Formatters.Binary;
 using Botsta.DataStorage;
 using Botsta.Server.GraphQL.Types;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Botsta.Server
 {
@@ -163,7 +165,11 @@ namespace Botsta.Server
                 });
             }
 
-            MigrateDatabase(app);
+            var autoMigrate = Configuration.GetValue<bool>("AutoMigrate", false);
+            if (autoMigrate)
+            {
+                MigrateDatabase(app);
+            }
 
             //app.UseHttpsRedirection();
 
@@ -194,10 +200,14 @@ namespace Botsta.Server
 
         private void MigrateDatabase(IApplicationBuilder app)
         {
-            using (var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            using var scope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
+            using var db = scope.ServiceProvider.GetRequiredService<BotstaDbContext>();
+
+            if (db.Database.GetPendingMigrations().Any())
             {
-                scope.ServiceProvider.GetRequiredService<BotstaDbContext>().Database.Migrate();
+                db.Database.Migrate();
             }
+
         }
     }
 }
