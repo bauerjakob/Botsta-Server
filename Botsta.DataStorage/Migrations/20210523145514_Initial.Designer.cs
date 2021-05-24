@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Botsta.DataStorage.Migrations
 {
     [DbContext(typeof(BotstaDbContext))]
-    [Migration("20210522184905_Initial")]
+    [Migration("20210523145514_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,7 +76,6 @@ namespace Botsta.DataStorage.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Type")

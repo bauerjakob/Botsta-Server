@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Botsta.DataStorage.Entities;
-using Botsta.Server.Middelware;
 using GraphQL.Types;
 
 namespace Botsta.Server.GraphQL.Types

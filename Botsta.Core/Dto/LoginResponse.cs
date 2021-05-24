@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Botsta.Server.Dto
+namespace Botsta.Core.Dto
 {
     public class LoginResponse : ErrorResponse
     {

@@ -32,6 +32,6 @@ namespace Botsta.DataStorage
 
         public Bot GetBotByName(string botName);
 
-        public Task<Bot> AddBotToDbAsync(User owner, string botName, string apiKeyHash, string apiKeySalt);
+        public Task<Bot> AddBotToDbAsync(User owner, string botName, bool isPublic, string apiKeyHash, string apiKeySalt);
     }
 }

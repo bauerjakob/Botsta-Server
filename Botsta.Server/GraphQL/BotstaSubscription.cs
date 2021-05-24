@@ -4,7 +4,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Botsta.DataStorage.Entities;
 using Botsta.Server.GraphQL.Types;
-using Botsta.Server.Middelware;
+using Botsta.Core.Services;
 using Botsta.Server.Services;
 using GraphQL;
 using GraphQL.Resolvers;
@@ -12,7 +12,7 @@ using GraphQL.Subscription;
 using GraphQL.Types;
 using GraphQL.Language.AST;
 using GraphQL.Authorization;
-using Botsta.Server.Extentions;
+using Botsta.Core.Extentions;
 using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 

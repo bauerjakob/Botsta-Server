@@ -74,7 +74,6 @@ namespace Botsta.DataStorage.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Type")

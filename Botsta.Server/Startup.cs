@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Botsta.DataStorage.Entities;
-using Botsta.Server.Configuration;
+using Botsta.Core.Configuration;
 using GraphQL.Types;
 using GraphQL.Server;
 using GraphQL.NewtonsoftJson;
@@ -23,8 +23,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using Botsta.Server.Extentions;
-using Botsta.Server.Middelware;
+using Botsta.Core.Extentions;
+using Botsta.Core;
 using Botsta.Server.Services;
 using Microsoft.Extensions.Primitives;
 using System.IO;
@@ -34,6 +34,7 @@ using Botsta.DataStorage;
 using Botsta.Server.GraphQL.Types;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Botsta.Core.Services;
 
 namespace Botsta.Server
 {

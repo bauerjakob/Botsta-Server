@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Botsta.DataStorage;
 using Botsta.DataStorage.Entities;
-using Botsta.Server.Extentions;
+using Botsta.Core.Extentions;
 using Botsta.Server.GraphQL.Types;
-using Botsta.Server.Middelware;
+using Botsta.Core.Services;
 using Botsta.Server.Services;
-using GraphQL;
+using GraphQL; 
 using GraphQL.Authorization;
 using GraphQL.Types;
 
@@ -50,12 +50,15 @@ namespace Botsta.Server.GraphQL
             FieldAsync<StringGraphType>("registerBot",
                description: "Register new bot",
                arguments: new QueryArguments(
-                   new QueryArgument<StringGraphType> { Name = "botName" }
+                   new QueryArgument<StringGraphType> { Name = "botName" },
+                   new QueryArgument<BooleanGraphType> { Name = "isPublic" }
                    ),
                resolve: async context => {
                    var botName = context.GetArgument<string>("botName");
+                   var isPublic = context.GetArgument<bool>("isPublic");
                    var user = session.GetUser();
-                   var (apiKey, bot) = await identityManager.RegisterBotAsync(botName, user);
+
+                   var (apiKey, bot) = await identityManager.RegisterBotAsync(botName, user, isPublic);
 
                    return apiKey;
                }

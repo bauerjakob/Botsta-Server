@@ -6,16 +6,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Botsta.DataStorage.Entities;
-using Botsta.Server.Extentions;
-using Botsta.Server.Configuration;
+using Botsta.Core.Extentions;
+using Botsta.Core.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Principal;
 using Botsta.DataStorage;
-using Botsta.Server.Dto;
+using Botsta.Core.Dto;
+using Botsta.Core.Services;
 
-namespace Botsta.Server.Middelware
+namespace Botsta.Core.Services
 {
     public class IdentityService : IIdentityService
     {
@@ -50,13 +51,13 @@ namespace Botsta.Server.Middelware
             return user;
         }
 
-        public async Task<(string apiKey, Bot bot)> RegisterBotAsync(string botName, User owner, string webhookUrl = null)
+        public async Task<(string apiKey, Bot bot)> RegisterBotAsync(string botName, User owner, bool isPublic)
         {
             var apiKey = GenerateApiKey();
 
             (var hash, var salt) = HashPassword(apiKey);
 
-            var bot = await _repository.AddBotToDbAsync(owner, botName, hash, salt);
+            var bot = await _repository.AddBotToDbAsync(owner, botName, isPublic, hash, salt);
 
             return (apiKey, bot);
         }

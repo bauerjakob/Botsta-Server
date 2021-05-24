@@ -15,7 +15,6 @@ namespace Botsta.DataStorage.Entities
         [Required]
         public ChatroomType Type { get; set; }
 
-        [Required]
         public string Name { get; set; }
 
         public virtual IEnumerable<ChatPracticant> ChatPracticants { get; set; } = new List<ChatPracticant>();

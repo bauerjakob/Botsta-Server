@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Botsta.DataStorage.Entities;
 
-namespace Botsta.Server.Middelware
+namespace Botsta.Core.Services
 {
     public interface ISessionController
     {

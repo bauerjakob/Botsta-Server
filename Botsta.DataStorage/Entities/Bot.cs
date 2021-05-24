@@ -15,6 +15,9 @@ namespace Botsta.DataStorage.Entities
         [ForeignKey(nameof(Owner))]
         public Guid OwnerId { get; set; }
 
+        [Required]
+        public bool IsPublic { get; set; }
+
         public User Owner { get; set; }
 
         public virtual ChatPracticant ChatPracticant { get; set; }

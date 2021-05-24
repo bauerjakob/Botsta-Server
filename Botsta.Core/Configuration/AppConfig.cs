@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Botsta.Server.Configuration
+namespace Botsta.Core.Configuration
 {
     public class AppConfig
     {

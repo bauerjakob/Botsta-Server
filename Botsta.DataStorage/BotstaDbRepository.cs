@@ -170,7 +170,7 @@ namespace Botsta.DataStorage
                 .Single(b => b.ChatPracticant.Name == botName);
         }
 
-        public async Task<Bot> AddBotToDbAsync(User owner, string botName, string apiKeyHash, string apiKeySalt)
+        public async Task<Bot> AddBotToDbAsync(User owner, string botName, bool isPublic, string apiKeyHash, string apiKeySalt)
         {
             var botId = Guid.NewGuid();
             var practicant = new ChatPracticant
@@ -186,7 +186,8 @@ namespace Botsta.DataStorage
             var bot = new Bot()
             {
                 Id = botId,
-                Owner = owner
+                Owner = owner,
+                IsPublic = isPublic
             };
 
             await _dbContext.ChatPracticants.AddAsync(practicant);

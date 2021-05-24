@@ -1,6 +1,34 @@
 version: '3.1'
 
 services:
+  # nginx-proxy:
+  #   image: jwilder/nginx-proxy
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - /var/run/docker.sock:/tmp/docker.sock:ro
+  #     - ./mount/nginx/vhost.d:/etc/nginx/vhost.d
+  #     - ./mount/nginx/certs:/etc/nginx/certs:ro
+  #     # - /apps/docker-articles/nginx/html:/usr/share/nginx/html
+  #   labels:
+  #    com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  # letsencrypt:
+  #   image: jrcs/letsencrypt-nginx-proxy-companion:v1.5
+  #   volumes_from: 
+  #     - nginx-proxy
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./mount/nginx/certs:/etc/nginx/certs:rw
+
+  # proxy:
+  #   image: nginx
+  #   environment: 
+  #     LETSENCRYPT_EMAIL: mail@bauer-jakob.de
+  #     LETSENCRYPT_HOST: websdev.de
+  #     VIRTUAL_HOST: websdev.de
+
   botsta-db:
     image: postgres:${PSQL_TAG}
     restart: always
@@ -34,5 +62,7 @@ services:
       AppConfig__JwtIssuer: https://localhost:5000
       AppConfig__JwtAudience: https://localhost:5000
       AppConfig__JwtSecret: secretaiufaefigpbaegipaebgaiergb123456sarg
+      AppConfig__TokenExpirationMinutes: 2
+      AppConfig__RefreshTokenExpirationDays: 999
       ConnectionStrings__DefaultConnection: Server=botsta-db;Port=5432;Database=srv_botsta_local;User Id=usr_botsta_local;Password=password;
 

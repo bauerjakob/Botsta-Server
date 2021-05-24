@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using Botsta.DataStorage;
-using Botsta.Server.Extentions;
+using Botsta.Core.Extentions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Botsta.Server.Middelware
+namespace Botsta.Core.Services
 {
     public class SessionController : ISessionController
     {
