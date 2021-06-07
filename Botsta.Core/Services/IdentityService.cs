@@ -86,8 +86,8 @@ namespace Botsta.Core.Services
 
         private string GenerateApiKey()
         {
-            int length = _random.Next(31, 37);
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.,:+#*'?=)(/&%$§}[]}!´`@<>";
+            int length = _random.Next(10, 11);
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_+/()!?$3";
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[_random.Next(s.Length)]).ToArray());
         }

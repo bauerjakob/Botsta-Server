@@ -4,11 +4,13 @@ WORKDIR /source
 # copy csproj and restore as distinct layers
 COPY *.sln .
 COPY Botsta.Server/*.csproj ./Botsta.Server/
+COPY Botsta.Core/*.csproj ./Botsta.Core/
 COPY Botsta.DataStorage/*.csproj ./Botsta.DataStorage/
 RUN dotnet restore
 
 # copy everything else and build app
 COPY Botsta.Server/. ./Botsta.Server/
+COPY Botsta.Core/. ./Botsta.Core/
 COPY Botsta.DataStorage/. ./Botsta.DataStorage/
 WORKDIR /source/Botsta.Server/
 RUN dotnet publish -c release -o /app --no-restore

@@ -24,6 +24,9 @@ namespace Botsta.DataStorage.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid");
 

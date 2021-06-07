@@ -109,7 +109,8 @@ namespace Botsta.DataStorage.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false)
+                    OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsPublic = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

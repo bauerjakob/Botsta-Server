@@ -33,7 +33,28 @@ namespace Botsta.Server.GraphQL
             Field<ListGraphType<ChatPracticantGraphType>>(
                 "allChatPracticants",
                 "Returns list of all registerd chat practicants (users and bots)",
-                resolve: c => dbContext.GetAllChatPracticants()
+                resolve: c =>
+                {
+                    var user = session.GetUser();
+                    var allPracticants = dbContext.GetAllChatPracticants().ToList();
+                    var ret = new List<ChatPracticant>();
+                    foreach (var item in allPracticants)
+                    {
+                        if (item.Type != PracticantType.Bot)
+                        {
+                            ret.Add(item);
+                            continue;
+                        }
+
+                        var bot = dbContext.GetBotById(item.Id.ToString());
+                        if (bot.IsPublic || bot.OwnerId == user.Id)
+                        {
+                            ret.Add(item);
+                            continue;
+                        }
+                    }
+                    return ret;
+                }
                 ).AuthorizeWith(PoliciesExtentions.User);
 
             Field<ListGraphType<GraphChatroomType>>(
