@@ -123,6 +123,7 @@ namespace Botsta.Server
             services.AddScoped<GraphChatroomType>();
             services.AddScoped<GraphMessageType>();
             services.AddScoped<ChatPracticantGraphType>();
+            services.AddScoped<BotGraphType>();
             services.AddScoped<ISchema, BotstaSchema>();
 
             services.AddScoped<ISessionController, SessionController>();

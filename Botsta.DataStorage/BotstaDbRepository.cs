@@ -139,6 +139,12 @@ namespace Botsta.DataStorage
                 .Single(b => b.Id.ToString() == botId);
         }
 
+        public IEnumerable<Bot> GetBots(Guid ownerId)
+        {
+            return _dbContext.Bots.Where(b => b.OwnerId == ownerId)
+                .Include(b => b.ChatPracticant);
+        }
+
         public async Task AddChatroomToDbAsync(Chatroom chatroom)
         {
             if (chatroom is null)

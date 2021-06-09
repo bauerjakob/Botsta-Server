@@ -16,7 +16,7 @@ namespace Botsta.Server.GraphQL
 {
     public class BotstaQuery : ObjectGraphType
     {
-        public BotstaQuery(IBotstaDbRepository dbContext, ISessionController session)
+        public BotstaQuery(IBotstaDbRepository repository, ISessionController session)
         {
             Field<ChatPracticantGraphType>(
                 "whoami",
@@ -27,7 +27,7 @@ namespace Botsta.Server.GraphQL
             Field<ListGraphType<GraphUserType>>(
                 "allUsers",
                 "Returns list of all registerd users (only users not bots)",
-                resolve: c => dbContext.GetAllUsers()
+                resolve: c => repository.GetAllUsers()
                 ).AuthorizeWith(PoliciesExtentions.User);
 
             Field<ListGraphType<ChatPracticantGraphType>>(
@@ -36,7 +36,7 @@ namespace Botsta.Server.GraphQL
                 resolve: c =>
                 {
                     var user = session.GetUser();
-                    var allPracticants = dbContext.GetAllChatPracticants().ToList();
+                    var allPracticants = repository.GetAllChatPracticants().ToList();
                     var ret = new List<ChatPracticant>();
                     foreach (var item in allPracticants)
                     {
@@ -46,7 +46,7 @@ namespace Botsta.Server.GraphQL
                             continue;
                         }
 
-                        var bot = dbContext.GetBotById(item.Id.ToString());
+                        var bot = repository.GetBotById(item.Id.ToString());
                         if (bot.IsPublic || bot.OwnerId == user.Id)
                         {
                             ret.Add(item);
@@ -77,10 +77,19 @@ namespace Botsta.Server.GraphQL
                 {
                     var chatroomId = c.GetArgument<Guid>("chatroomId");
 
-                    var chatroom = await dbContext.GetChatroomByIdAsync(chatroomId);
+                    var chatroom = await repository.GetChatroomByIdAsync(chatroomId);
                     return chatroom;
                 }).AuthorizeWith(PoliciesExtentions.User);
 
+            Field<ListGraphType<BotGraphType>>(
+                "getOwnBots",
+                description: "Returns all bots where current user is owner",
+                resolve: c =>
+                {
+                    var user = session.GetUser();
+                    var bots = repository.GetBots(user.Id);
+                    return bots;
+                }).AuthorizeWith(PoliciesExtentions.User);
         }
     }
 }

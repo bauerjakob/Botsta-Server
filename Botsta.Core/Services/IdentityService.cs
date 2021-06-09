@@ -208,7 +208,7 @@ namespace Botsta.Core.Services
             {
                 throw new ArgumentNullException(password);
             }
-            else if (password.Length < 8)
+            else if (password.Length < 5)
             {
                 throw new ArgumentException(nameof(password));
             }

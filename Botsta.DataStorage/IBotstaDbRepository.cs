@@ -12,6 +12,7 @@ namespace Botsta.DataStorage
         public Task<ChatPracticant> GetChatPracticantAsync(Guid id);
         public IEnumerable<ChatPracticant> GetChatPracticants(IEnumerable<Guid> ids);
         public Task<ChatPracticant> GetChatPracticantAsync(string name);
+        public IEnumerable<Bot> GetBots(Guid owner);
 
         public IEnumerable<Message> GetMessages(string chatroomId);
 
