@@ -25,7 +25,9 @@ namespace Botsta.DataStorage
 
         public IEnumerable<ChatPracticant> GetChatPracticants(IEnumerable<Guid> ids)
         {
-            return _dbContext.ChatPracticants.Where(
+            return _dbContext.ChatPracticants
+                .Include(c => c.KeyExchange)
+                .Where(
                     c => ids.Contains(c.Id)
                 );
         }
@@ -34,6 +36,7 @@ namespace Botsta.DataStorage
         {
             return await _dbContext.ChatPracticants
                 .Include(c => c.Chatrooms)
+                .Include(c => c.KeyExchange)
                 .SingleAsync(
                     c => c.Id == id
                 );
@@ -90,6 +93,8 @@ namespace Botsta.DataStorage
                     .ThenInclude(u => u.Chatrooms)
                     .ThenInclude(c => c.ChatPracticants)
                 .Include(u => u.Bots)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(c => c.KeyExchange)
                 .Single(u => u.ChatPracticant.Name == username);
         }
 
@@ -103,6 +108,8 @@ namespace Botsta.DataStorage
                     .ThenInclude(u => u.Chatrooms)
                         .ThenInclude(u => u.ChatPracticants)
                 .Include(u => u.Bots)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(c => c.KeyExchange)
                 .Single(u => u.Id.ToString() == userId);
         }
 
@@ -111,6 +118,7 @@ namespace Botsta.DataStorage
         {
             return await _dbContext.Chatrooms?
                 .Include(c => c.ChatPracticants)
+                    .ThenInclude(c => c.KeyExchange)
                 .Include(c => c.Messages)
                 .SingleAsync(c => c.Id.Equals(id));
         }
@@ -121,6 +129,8 @@ namespace Botsta.DataStorage
                 .Include(u => u.ChatPracticant)
                     .ThenInclude(u => u.Chatrooms)
                 .Include(u => u.Bots)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(c => c.KeyExchange)
                 .ToList();
         }
 
@@ -136,6 +146,8 @@ namespace Botsta.DataStorage
                 .Include(u => u.ChatPracticant)
                     .ThenInclude(u => u.Chatrooms)
                 .Include(u => u.Owner)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(c => c.KeyExchange)
                 .Single(b => b.Id.ToString() == botId);
         }
 
@@ -173,6 +185,8 @@ namespace Botsta.DataStorage
                 .Include(u => u.ChatPracticant)
                     .ThenInclude(u => u.Chatrooms)
                 .Include(u => u.Owner)
+                .Include(u => u.ChatPracticant)
+                    .ThenInclude(c => c.KeyExchange)
                 .Single(b => b.ChatPracticant.Name == botName);
         }
 
@@ -201,6 +215,20 @@ namespace Botsta.DataStorage
             await _dbContext.SaveChangesAsync();
 
             return bot;
+        }
+
+        public async Task AddKeyExchangeToDbAsync(Guid chatPracticantId, Guid sessionId, string publicKey)
+        {
+            var keyExchange = new KeyExchange
+            {
+                ChatPracticantId = chatPracticantId,
+                PublicKey = publicKey,
+                SessionId = sessionId
+            };
+
+            await _dbContext.KeyExchanges.AddAsync(keyExchange);
+            await _dbContext.SaveChangesAsync();
+
         }
     }
 }

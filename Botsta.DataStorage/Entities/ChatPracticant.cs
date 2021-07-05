@@ -28,5 +28,7 @@ namespace Botsta.DataStorage.Entities
         public PracticantType Type { get; set; }
 
         public virtual IEnumerable<Chatroom> Chatrooms { get; set; } = new List<Chatroom>();
+
+        public virtual IEnumerable<KeyExchange> KeyExchange { get; set; }
     }
 }

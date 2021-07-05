@@ -22,5 +22,6 @@ namespace Botsta.DataStorage
         public DbSet<ChatPracticant> ChatPracticants { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Bot> Bots { get; set; }
+        public DbSet<KeyExchange> KeyExchanges { get; set; }
     }
 }

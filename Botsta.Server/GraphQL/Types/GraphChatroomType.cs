@@ -17,13 +17,19 @@ namespace Botsta.Server.GraphQL.Types
 
                 var chatroom = c.Source;
                 return chatroom.Name ?? string.Join(", ", c.Source.ChatPracticants.Where(p => p.Id != user.Id).Select(c => c.Name).OrderBy(n => n));
+            });
+            Field<GraphMessageType>("latestMessage", resolve: c => {
+                    var sessionId = session.GetSessionId();
+                    return c.Source.Messages?.OrderBy(m => m.SendTime).LastOrDefault(m => m.ReceiverSessionId == sessionId);
                 });
-            Field<GraphMessageType>("latestMessage", resolve: c => c.Source.Messages?.OrderBy(m => m.SendTime).LastOrDefault());
+
             Field<ListGraphType<GraphMessageType>>(
                 "messages",
                 resolve: c => {
+                    var sessionId = session.GetSessionId();
+
                     var chatroom = c.Source;
-                    return chatroom.Messages.OrderByDescending(m => m.SendTime);
+                    return chatroom.Messages.Where(m => m.ReceiverSessionId == sessionId).OrderByDescending(m => m.SendTime);
                 }
                 );
         }

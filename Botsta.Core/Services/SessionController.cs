@@ -55,5 +55,17 @@ namespace Botsta.Core.Services
 
             return await _dbContext.GetChatPracticantAsync(Guid.Parse(practicantId));
         }
+
+        public Guid GetSessionId()
+        {
+            return _httpContext.HttpContext.User.Claims.GetSessionId();
+        }
+
+        public Guid GetSessionId(string token)
+        {
+            var principal = _identityService.ValidateToken(token);
+
+            return principal.Claims.GetSessionId();
+        }
     }
 }

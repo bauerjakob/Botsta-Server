@@ -43,11 +43,12 @@ namespace Botsta.Server.GraphQL
         private IObservable<Message> Subscribe(IResolveEventStreamContext context) {
             var refreshToken = context.GetArgument<string>("refreshToken");
             var messages = _notifier.Messages();
+            var sessionId = _session.GetSessionId(refreshToken);
 
             return messages
                 .Where(
                 m => {
-                    if (string.IsNullOrEmpty(m?.ChatroomId.ToString()))
+                    if (string.IsNullOrEmpty(m?.ChatroomId.ToString()) || m.ReceiverSessionId != sessionId)
                     {
                         return false;
                     }

@@ -20,14 +20,16 @@ namespace Botsta.Server.GraphQL
             FieldAsync<LoginGraphType>("login",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "secret" }
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "secret" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "publicKey" }
                     ),
                 resolve: async context =>
                 {
                     var name = context.GetArgument<string>("name");
                     var secret = context.GetArgument<string>("secret");
+                    var publicKey = context.GetArgument<string>("publicKey");
 
-                    var response =  await identityManager.LoginAsync(name, secret);
+                    var response =  await identityManager.LoginAsync(name, secret, publicKey);
                     return response;
                 }
             );
@@ -35,15 +37,17 @@ namespace Botsta.Server.GraphQL
             FieldAsync<LoginGraphType>("register",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "username" },
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "password" }
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "password" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "publicKey" }
                     ),
                 resolve: async context =>
                 {
                     var username = context.GetArgument<string>("username");
                     var password = context.GetArgument<string>("password");
+                    var publicKey = context.GetArgument<string>("publicKey");
 
                     await identityManager.RegisterUserAsync(username, password);
-                    return await identityManager.LoginAsync(username, password);
+                    return await identityManager.LoginAsync(username, password, publicKey);
                 }
             );
 
@@ -142,14 +146,18 @@ namespace Botsta.Server.GraphQL
                 description: "Post message to chatroom",
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType> { Name = "chatroomId" },
-                    new QueryArgument<StringGraphType> { Name = "message" }
+                    new QueryArgument<StringGraphType> { Name = "message" },
+                    new QueryArgument<StringGraphType> { Name = "receiverSessionId" }
                 ),
                 resolve: async context =>
                 {
                     var chatroomId = context.GetArgument<string>("chatroomId");
                     var messageJson = context.GetArgument<string>("message");
+                    var receiverSessionId = context.GetArgument<Guid>("receiverSessionId");
 
-                    var  chatPracticant = await session.GetChatPracticantAsync();
+                    var chatPracticant = await session.GetChatPracticantAsync();
+                    var sessionId = session.GetSessionId();
+                    var publicKey = chatPracticant.KeyExchange.Single(k => k.SessionId == sessionId).PublicKey;
 
                     var newMessage = new Message
                     {
@@ -157,7 +165,9 @@ namespace Botsta.Server.GraphQL
                         Msg = messageJson,
                         ChatroomId = Guid.Parse(chatroomId),
                         SenderId = chatPracticant.Id,
-                        SendTime = DateTimeOffset.UtcNow
+                        SendTime = DateTimeOffset.UtcNow,
+                        SenderPublicKey = publicKey,
+                        ReceiverSessionId = receiverSessionId
                     };
 
                     await repository.AddMessageToDb(newMessage);

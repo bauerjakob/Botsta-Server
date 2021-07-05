@@ -87,6 +87,25 @@ namespace Botsta.DataStorage.Migrations
                     b.ToTable("Chatroom");
                 });
 
+            modelBuilder.Entity("Botsta.DataStorage.Entities.KeyExchange", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChatPracticantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PublicKey")
+                        .HasColumnType("text");
+
+                    b.HasKey("SessionId");
+
+                    b.HasIndex("ChatPracticantId");
+
+                    b.ToTable("KeyExchanges");
+                });
+
             modelBuilder.Entity("Botsta.DataStorage.Entities.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -101,11 +120,17 @@ namespace Botsta.DataStorage.Migrations
                         .HasColumnType("text")
                         .HasColumnName("Message");
 
+                    b.Property<Guid>("ReceiverSessionId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTimeOffset>("SendTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("SenderPublicKey")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -160,6 +185,17 @@ namespace Botsta.DataStorage.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Botsta.DataStorage.Entities.KeyExchange", b =>
+                {
+                    b.HasOne("Botsta.DataStorage.Entities.ChatPracticant", "ChatPracticant")
+                        .WithMany("KeyExchange")
+                        .HasForeignKey("ChatPracticantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChatPracticant");
+                });
+
             modelBuilder.Entity("Botsta.DataStorage.Entities.Message", b =>
                 {
                     b.HasOne("Botsta.DataStorage.Entities.Chatroom", "Chatroom")
@@ -203,6 +239,11 @@ namespace Botsta.DataStorage.Migrations
                         .HasForeignKey("ChatroomsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Botsta.DataStorage.Entities.ChatPracticant", b =>
+                {
+                    b.Navigation("KeyExchange");
                 });
 
             modelBuilder.Entity("Botsta.DataStorage.Entities.Chatroom", b =>

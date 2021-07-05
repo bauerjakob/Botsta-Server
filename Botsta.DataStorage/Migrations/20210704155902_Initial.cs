@@ -37,6 +37,25 @@ namespace Botsta.DataStorage.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "KeyExchanges",
+                columns: table => new
+                {
+                    SessionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChatPracticantId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PublicKey = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_KeyExchanges", x => x.SessionId);
+                    table.ForeignKey(
+                        name: "FK_KeyExchanges_ChatPracticant_ChatPracticantId",
+                        column: x => x.ChatPracticantId,
+                        principalTable: "ChatPracticant",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "User",
                 columns: table => new
                 {
@@ -85,7 +104,9 @@ namespace Botsta.DataStorage.Migrations
                     Message = table.Column<string>(type: "text", nullable: false),
                     ChatroomId = table.Column<Guid>(type: "uuid", nullable: false),
                     SenderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    SendTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    SendTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    ReceiverSessionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SenderPublicKey = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -146,6 +167,11 @@ namespace Botsta.DataStorage.Migrations
                 column: "ChatroomsId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_KeyExchanges_ChatPracticantId",
+                table: "KeyExchanges",
+                column: "ChatPracticantId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Message_ChatroomId",
                 table: "Message",
                 column: "ChatroomId");
@@ -163,6 +189,9 @@ namespace Botsta.DataStorage.Migrations
 
             migrationBuilder.DropTable(
                 name: "ChatPracticantChatroom");
+
+            migrationBuilder.DropTable(
+                name: "KeyExchanges");
 
             migrationBuilder.DropTable(
                 name: "Message");

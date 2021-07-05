@@ -71,11 +71,14 @@ namespace Botsta.Core.Services
 
         public async Task<RefreshTokenResponse> RefreshTokenAsync(ClaimsPrincipal claims)
         {
+            var sessionId = claims.Claims.GetSessionId();
             var practicantId = claims.Claims.GetSubject();
             var chatPracticant = await _repository.GetChatPracticantAsync(Guid.Parse(practicantId));
 
             var generatedToken = GenerateJwtToken(practicantId,
-                chatPracticant.Type == PracticantType.User ? PoliciesExtentions.User : PoliciesExtentions.Bot, DateTime.UtcNow.Add(_tokenExpirationTimeSpan));
+                chatPracticant.Type == PracticantType.User ? PoliciesExtentions.User : PoliciesExtentions.Bot,
+                DateTime.UtcNow.Add(_tokenExpirationTimeSpan),
+                sessionId);
 
             return new RefreshTokenResponse
             {
@@ -92,7 +95,7 @@ namespace Botsta.Core.Services
               .Select(s => s[_random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<LoginResponse> LoginAsync(string name, string secret)
+        public async Task<LoginResponse> LoginAsync(string name, string secret, string publicKey)
         {
             var practicant = await _repository.GetChatPracticantAsync(name);
 
@@ -110,8 +113,11 @@ namespace Botsta.Core.Services
                     practicant.Type == PracticantType.User ?
                         PoliciesExtentions.User :
                         PoliciesExtentions.Bot,
-                    DateTime.UtcNow.Add(_tokenExpirationTimeSpan));
+                    DateTime.UtcNow.Add(_tokenExpirationTimeSpan),
+                    refreshToken.tokenId);
 
+                await _repository.AddKeyExchangeToDbAsync(practicant.Id, refreshToken.tokenId, publicKey);
+                
                 return new LoginResponse
                 {
                     Token = token.token,
@@ -127,11 +133,11 @@ namespace Botsta.Core.Services
             };
         }
 
-        (string token, Guid tokenId) GenerateJwtToken(string subject, string role, DateTime? expireDate)
+        (string token, Guid tokenId) GenerateJwtToken(string subject, string role, DateTime? expireDate, Guid? tokenId = null)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appConfig.JwtSecret));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var tokenId = Guid.NewGuid();
+            tokenId = tokenId != null ? tokenId : Guid.NewGuid();
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, subject),
@@ -147,7 +153,7 @@ namespace Botsta.Core.Services
                 signingCredentials: credentials
             );
 
-            return (new JwtSecurityTokenHandler().WriteToken(token), tokenId);
+            return (new JwtSecurityTokenHandler().WriteToken(token), tokenId.Value);
         }
 
         public ClaimsPrincipal ValidateToken(string token)

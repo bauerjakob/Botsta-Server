@@ -23,6 +23,8 @@ namespace Botsta.DataStorage
 
         public User GetUserById(string userId);
 
+        public Task AddKeyExchangeToDbAsync(Guid chatPracticantId, Guid sessionId, string publicKey);
+
         public Bot GetBotById(string botId);
 
         public Task<User> AddUserToDbAsync(string username, string passwordHash, string passwordSalt);

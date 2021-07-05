@@ -11,7 +11,7 @@ namespace Botsta.Core.Services
     {
         public Task<User> RegisterUserAsync(string username, string password);
         public Task<(string apiKey, Bot bot)> RegisterBotAsync(string botName, User owner, bool isPublic);
-        public Task<LoginResponse> LoginAsync(string name, string secret);
+        public Task<LoginResponse> LoginAsync(string name, string secret, string publicKey);
         public ClaimsPrincipal ValidateToken(string token);
         Task<RefreshTokenResponse> RefreshTokenAsync(string refreshToken);
         Task<RefreshTokenResponse> RefreshTokenAsync(ClaimsPrincipal claims);

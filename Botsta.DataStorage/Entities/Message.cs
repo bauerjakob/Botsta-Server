@@ -26,6 +26,11 @@ namespace Botsta.DataStorage.Entities
         [Required]
         public DateTimeOffset SendTime { get; set; }
 
+        [Required]
+        public Guid ReceiverSessionId { get; set; }
+        
+        public string SenderPublicKey { get; set; }
+
         public ChatPracticant Sender { get; set; }
         public Chatroom Chatroom { get; set; }
     }

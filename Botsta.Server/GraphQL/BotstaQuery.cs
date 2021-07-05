@@ -90,6 +90,31 @@ namespace Botsta.Server.GraphQL
                     var bots = repository.GetBots(user.Id);
                     return bots;
                 }).AuthorizeWith(PoliciesExtentions.User);
+
+            FieldAsync<ListGraphType<ChatPracticantGraphType>>(
+                "getChatPracticantsOfChatroom",
+                description: "Returns a list of chat practicants of a chatroom",
+                arguments: new QueryArguments
+                {
+                    new QueryArgument<StringGraphType> {Name = "chatroomId"}
+                },
+                resolve: async c =>
+                {
+                    var chatPracticant = await session.GetChatPracticantAsync();
+
+                    var chatroomId = c.GetArgument<Guid>("chatroomId");
+
+                    var chatroom =  await repository.GetChatroomByIdAsync(chatroomId);
+
+                    if (chatroom.ChatPracticants.Select(c => c.Id).Contains(chatPracticant.Id))
+                    {
+                        return chatroom.ChatPracticants;
+                    }
+
+                    return null;
+                    
+                })
+                .RequiresAuthorization();
         }
     }
 }

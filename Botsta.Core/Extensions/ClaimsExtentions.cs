@@ -13,5 +13,12 @@ namespace Botsta.Core.Extentions
             return claims
                 .Single(c => c.Properties.Any() ? c.Properties.FirstOrDefault().Value == JwtRegisteredClaimNames.Sub : false)?.Value;
         }
+
+        public static Guid GetSessionId(this IEnumerable<Claim> claims)
+        {
+            var sessionId = claims
+                .Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+            return Guid.Parse(sessionId);
+        }
     }
 }

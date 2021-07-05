@@ -12,6 +12,7 @@ namespace Botsta.Server.GraphQL.Types
             Field("message", x => x.Msg);
             Field("sendTime", x => x.SendTime);
             Field("chatroomId", x => x.ChatroomId);
+            Field("senderPublicKey", x => x.SenderPublicKey);
             Field<ChatPracticantGraphType>("sender", resolve: x => x.Source.Sender);
         }
     }

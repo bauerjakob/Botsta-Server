@@ -14,6 +14,7 @@ namespace Botsta.Server.GraphQL.Types
             Field<StringGraphType>("type", resolve: c => c.Source.Type.ToString());
             Field("isUser", c => c.Type == PracticantType.User);
             Field("isBot", c => c.Type == PracticantType.Bot);
+            Field<ListGraphType<KeyExchangeGraphType>>("keyExchange", resolve: c => c.Source.KeyExchange);
         }
     }
 }

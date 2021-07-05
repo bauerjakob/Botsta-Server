@@ -12,6 +12,7 @@ namespace Botsta.Server.GraphQL.Types
             Field("name", b => b.ChatPracticant.Name);
             Field(b => b.OwnerId);
             Field(b => b.IsPublic);
+            Field<ListGraphType<KeyExchangeGraphType>>("keyExchange", resolve: c => c.Source.ChatPracticant.KeyExchange);
         }
     }
 }
