@@ -177,6 +177,21 @@ namespace Botsta.Server.GraphQL
                     return newMessage;
                 }
             ).RequiresAuthorization();
+
+            FieldAsync<StringGraphType>("deleteMessages",
+                description: "Delete messages from server",
+                arguments: new QueryArguments(
+                    new QueryArgument<ListGraphType<StringGraphType>> { Name = "messageIds" }
+                    ),
+                resolve: async context =>
+                {
+                    var sessionId = session.GetSessionId();
+                    var messageIds = context.GetArgument<Guid[]>("messageIds");
+
+                    await repository.DeleteMessagesAsync(messageIds, sessionId);
+
+                    return "ok";
+                }).RequiresAuthorization();
         }
     }
 }

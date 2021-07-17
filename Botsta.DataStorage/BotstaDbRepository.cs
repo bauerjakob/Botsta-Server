@@ -230,5 +230,12 @@ namespace Botsta.DataStorage
             await _dbContext.SaveChangesAsync();
 
         }
+
+        public async Task DeleteMessagesAsync(IEnumerable<Guid> messageIds, Guid sessionId)
+        {
+            var messagesToDelete = _dbContext.Messages.Where(m => messageIds.Contains(m.Id) && m.ReceiverSessionId == sessionId);
+            _dbContext.Messages.RemoveRange(messagesToDelete);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

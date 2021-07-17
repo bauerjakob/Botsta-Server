@@ -23,6 +23,8 @@ namespace Botsta.DataStorage
 
         public User GetUserById(string userId);
 
+        public Task DeleteMessagesAsync(IEnumerable<Guid> messageIds, Guid sessionId);
+
         public Task AddKeyExchangeToDbAsync(Guid chatPracticantId, Guid sessionId, string publicKey);
 
         public Bot GetBotById(string botId);
