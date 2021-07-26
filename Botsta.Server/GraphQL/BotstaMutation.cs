@@ -192,6 +192,17 @@ namespace Botsta.Server.GraphQL
 
                     return "ok";
                 }).RequiresAuthorization();
+
+            FieldAsync<StringGraphType>("logout",
+               description: "Logout",
+               resolve: async context =>
+               {
+                   var sessionId = session.GetSessionId(); 
+
+                   await repository.DeleteKeyExchangeAsync(sessionId);
+
+                   return "ok";
+               }).RequiresAuthorization();
         }
     }
 }

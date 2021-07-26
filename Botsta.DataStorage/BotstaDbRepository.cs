@@ -231,6 +231,14 @@ namespace Botsta.DataStorage
 
         }
 
+        public async Task DeleteKeyExchangeAsync(Guid sessionId)
+        {
+            var deleteSession = await _dbContext.KeyExchanges.SingleOrDefaultAsync(k => k.SessionId == sessionId);
+            _dbContext.KeyExchanges.Remove(deleteSession);
+            await _dbContext.SaveChangesAsync();
+
+        }
+
         public async Task DeleteMessagesAsync(IEnumerable<Guid> messageIds, Guid sessionId)
         {
             var messagesToDelete = _dbContext.Messages.Where(m => messageIds.Contains(m.Id) && m.ReceiverSessionId == sessionId);

@@ -18,6 +18,7 @@ namespace Botsta.Core.Extentions
         {
             var sessionId = claims
                 .Single(c => c.Type == JwtRegisteredClaimNames.Jti).Value;
+
             return Guid.Parse(sessionId);
         }
     }
